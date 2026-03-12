@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orbit — Upload your data. Predict the future.</title>
+  <meta name="description" content="The data-driven dynamics simulator that's 100x faster and 50x cheaper than COMSOL. For vibrations, circuits, robotics, and limit-cycle systems.">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* --- Utility --- */
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    a {
+      color: #4F8EF7;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    a:hover { color: #7aabff; }
+
+    /* --- Animations --- */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(32px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* --- Navigation --- */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(79, 142, 247, 0.08);
+      transition: padding 0.3s;
+    }
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+    .nav-logo span { color: #4F8EF7; }
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: #a0a0b0;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: #fff; }
+
+    .nav-cta {
+      display: inline-block;
+      padding: 8px 20px;
+      background: #4F8EF7;
+      color: #fff !important;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .nav-cta:hover {
+      background: #3a75d8;
+      transform: translateY(-1px);
+    }
+
+    /* mobile hamburger */
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .nav-toggle span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: #e0e0e0;
+      border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+
+    /* --- Hero Section --- */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(79, 142, 247, 0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 80%, rgba(79, 142, 247, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    /* subtle grid lines */
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79, 142, 247, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79, 142, 247, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 760px;
+      animation: fadeInUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border: 1px solid rgba(79, 142, 247, 0.25);
+      border-radius: 100px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #4F8EF7;
+      background: rgba(79, 142, 247, 0.06);
+      margin-bottom: 28px;
+      letter-spacing: 0.02em;
+    }
+    .hero h1 {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin-bottom: 20px;
+    }
+    .hero .tagline {
+      font-size: clamp(1.15rem, 2.5vw, 1.55rem);
+      font-weight: 400;
+      color: #c0c0d0;
+      margin-bottom: 12px;
+      line-height: 1.45;
+    }
+    .hero .subtitle {
+      font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+      color: #8888a0;
+      margin-bottom: 44px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.55;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .btn-primary {
+      background: #4F8EF7;
+      color: #fff;
+      box-shadow: 0 4px 24px rgba(79, 142, 247, 0.3);
+    }
+    .btn-primary:hover {
+      background: #3a75d8;
+      box-shadow: 0 6px 32px rgba(79, 142, 247, 0.4);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: #e0e0e0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    /* --- Section --- */
+    section {
+      padding: 100px 0;
+    }
+    .section-label {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #4F8EF7;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      line-height: 1.15;
+    }
+    .section-subtitle {
+      font-size: 1.05rem;
+      color: #8888a0;
+      max-width: 560px;
+      line-height: 1.6;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .section-header .section-subtitle {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* --- How It Works --- */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      position: relative;
+    }
+    /* connector line */
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 56px;
+      left: calc(16.67% + 32px);
+      right: calc(16.67% + 32px);
+      height: 2px;
+      background: linear-gradient(90deg, rgba(79, 142, 247, 0.15), rgba(79, 142, 247, 0.3), rgba(79, 142, 247, 0.15));
+      z-index: 0;
+    }
+
+    .step-card {
+      text-align: center;
+      padding: 40px 28px;
+      position: relative;
+      z-index: 1;
+    }
+    .step-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      background: rgba(79, 142, 247, 0.08);
+      border: 1px solid rgba(79, 142, 247, 0.15);
+      border-radius: 18px;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+    .step-card:hover .step-icon {
+      transform: scale(1.08);
+      border-color: rgba(79, 142, 247, 0.35);
+    }
+    .step-number {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #4F8EF7;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    .step-card h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    .step-card p {
+      font-size: 0.94rem;
+      color: #9999b0;
+      line-height: 1.6;
+    }
+
+    /* --- Features Grid --- */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .feature-card {
+      background: #1a1a2e;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 32px 28px;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(79, 142, 247, 0.2);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+    }
+    .feature-icon {
+      font-size: 1.8rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .feature-card h3 {
+      font-size: 1.08rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    .feature-card p {
+      font-size: 0.92rem;
+      color: #9999b0;
+      line-height: 1.6;
+    }
+
+    /* --- Demo Section --- */
+    #demo {
+      background: linear-gradient(180deg, #0a0a0f 0%, #0f0f1a 50%, #0a0a0f 100%);
+    }
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+      margin-bottom: 48px;
+    }
+    .demo-card {
+      background: #1a1a2e;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 36px 32px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .demo-card:hover {
+      border-color: rgba(79, 142, 247, 0.2);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+    }
+    .demo-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #4F8EF7, #7aabff);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .demo-card:hover::before { opacity: 1; }
+
+    .demo-label {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+    .demo-label.linear {
+      background: rgba(79, 142, 247, 0.12);
+      color: #4F8EF7;
+    }
+    .demo-label.nonlinear {
+      background: rgba(168, 85, 247, 0.12);
+      color: #a855f7;
+    }
+    .demo-card h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .demo-card p {
+      font-size: 0.92rem;
+      color: #9999b0;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .demo-metric {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(79, 142, 247, 0.06);
+      border: 1px solid rgba(79, 142, 247, 0.12);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #4F8EF7;
+    }
+    .demo-metric.purple {
+      background: rgba(168, 85, 247, 0.06);
+      border-color: rgba(168, 85, 247, 0.12);
+      color: #a855f7;
+    }
+    .demo-cta {
+      text-align: center;
+    }
+
+    /* --- Pricing --- */
+    #pricing {
+      background: #0a0a0f;
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+    .pricing-card {
+      background: #1a1a2e;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 40px 32px;
+      text-align: center;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+    .pricing-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+    }
+    .pricing-card.featured {
+      border-color: rgba(79, 142, 247, 0.35);
+      box-shadow: 0 0 60px rgba(79, 142, 247, 0.08);
+      transform: scale(1.03);
+    }
+    .pricing-card.featured:hover {
+      transform: scale(1.03) translateY(-4px);
+    }
+    .pricing-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 4px 16px;
+      background: #4F8EF7;
+      color: #fff;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .pricing-card .plan-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #8888a0;
+      margin-bottom: 8px;
+    }
+    .pricing-card .plan-desc {
+      font-size: 0.88rem;
+      color: #9999b0;
+      margin-bottom: 24px;
+    }
+    .pricing-card .price {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.03em;
+      margin-bottom: 4px;
+      line-height: 1.1;
+    }
+    .pricing-card .price-period {
+      font-size: 0.85rem;
+      color: #6a6a80;
+      margin-bottom: 28px;
+    }
+    .pricing-card ul {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 32px;
+    }
+    .pricing-card ul li {
+      font-size: 0.9rem;
+      color: #b0b0c0;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      display: flex;
+      align-items: start;
+      gap: 10px;
+    }
+    .pricing-card ul li::before {
+      content: '\2713';
+      color: #4F8EF7;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .pricing-card .btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    /* --- FAQ --- */
+    #faq {
+      background: linear-gradient(180deg, #0a0a0f 0%, #0f0f1a 100%);
+    }
+    .faq-list {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .faq-item {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      text-align: left;
+      padding: 24px 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #e0e0e0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-family: inherit;
+      transition: color 0.2s;
+    }
+    .faq-question:hover { color: #fff; }
+    .faq-chevron {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s;
+      color: #4F8EF7;
+      font-size: 1.1rem;
+    }
+    .faq-item.open .faq-chevron {
+      transform: rotate(180deg);
+    }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1), padding 0.4s;
+      padding: 0 0 0 0;
+    }
+    .faq-item.open .faq-answer {
+      max-height: 300px;
+      padding-bottom: 24px;
+    }
+    .faq-answer p {
+      font-size: 0.94rem;
+      color: #9999b0;
+      line-height: 1.7;
+    }
+
+    /* --- Footer --- */
+    footer {
+      padding: 48px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-copy {
+      font-size: 0.88rem;
+      color: #6a6a80;
+    }
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+    .footer-links a {
+      font-size: 0.88rem;
+      color: #6a6a80;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: #e0e0e0; }
+
+    /* --- Responsive --- */
+    @media (max-width: 900px) {
+      .steps { grid-template-columns: 1fr; gap: 16px; }
+      .steps::before { display: none; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .demo-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
+      .pricing-card.featured { transform: none; }
+      .pricing-card.featured:hover { transform: translateY(-4px); }
+    }
+
+    @media (max-width: 640px) {
+      section { padding: 72px 0; }
+      .features-grid { grid-template-columns: 1fr; }
+      .hero { padding: 100px 20px 60px; min-height: auto; }
+      .hero h1 { font-size: 2.6rem; }
+
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0; right: 0;
+        background: rgba(10, 10, 15, 0.97);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 20px 24px;
+        gap: 16px;
+        border-bottom: 1px solid rgba(79, 142, 247, 0.08);
+      }
+      .nav-toggle { display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="container">
+      <div class="nav-logo"><span>O</span>rbit</div>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#demo">Demo</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#demo" class="nav-cta">Try Free Demo</a></li>
+      </ul>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">Data-Driven Dynamics Simulator</div>
+      <h1>Orbit</h1>
+      <p class="tagline">Upload your data. Predict the future.</p>
+      <p class="subtitle">The data-driven dynamics simulator that's 100&times; faster and 50&times; cheaper than COMSOL. For vibrations, circuits, robotics, and limit-cycle systems.</p>
+      <div class="hero-buttons">
+        <a href="#demo" class="btn btn-primary">Try Free Demo &rarr;</a>
+        <a href="#pricing" class="btn btn-secondary">See Pricing</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">How It Works</div>
+        <h2 class="section-title">Three steps. Zero equations.</h2>
+        <p class="section-subtitle">Go from raw measurement data to accurate predictions in under a minute.</p>
+      </div>
+      <div class="steps">
+        <div class="step-card reveal">
+          <div class="step-icon">&#x1F4CA;</div>
+          <div class="step-number">Step 1</div>
+          <h3>Upload Your Data</h3>
+          <p>Drop a CSV from your sensors, test bench, or simulation. Or pick from our library of built-in systems.</p>
+        </div>
+        <div class="step-card reveal">
+          <div class="step-icon">&#x1F680;</div>
+          <div class="step-number">Step 2</div>
+          <h3>Build Model</h3>
+          <p>One click. Our engine learns your system's dynamics in seconds &mdash; no parameter tuning, no PhD required.</p>
+        </div>
+        <div class="step-card reveal">
+          <div class="step-icon">&#x1F52E;</div>
+          <div class="step-number">Step 3</div>
+          <h3>Predict &amp; Analyze</h3>
+          <p>Get future behavior, stability analysis, natural frequencies, damping ratios, and confidence intervals. Export anywhere.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">Features</div>
+        <h2 class="section-title">Everything you need. Nothing you don't.</h2>
+        <p class="section-subtitle">Purpose-built for the dynamics problems engineers actually solve every day.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <span class="feature-icon">&#x26A1;</span>
+          <h3>Machine-Precision Predictions</h3>
+          <p>For linear systems (circuits, vibrations, controls), Orbit matches COMSOL with 10<sup>-11</sup> RMSE accuracy.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">&#x1F4C8;</span>
+          <h3>Confidence Bands</h3>
+          <p>Know how much to trust each prediction. Monte Carlo uncertainty quantification built in.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">&#x1F527;</span>
+          <h3>Engineer-Friendly Reports</h3>
+          <p>Natural frequencies in Hz. Damping ratios. Settling times. No eigenvalues, no jargon.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">&#x1F50C;</span>
+          <h3>Export Anywhere</h3>
+          <p>Download predictions as CSV, model files for Python, or integration-ready FMU formats.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">&#x1F3D7;&#xFE0F;</span>
+          <h3>Built-in System Library</h3>
+          <p>RLC circuits, mass-spring-dampers, beams, oscillators &mdash; ready to predict out of the box.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">&#x1F4B0;</span>
+          <h3>50&times; Cheaper</h3>
+          <p>$149/year vs $8,000+ for COMSOL. Same accuracy on 80% of dynamics problems.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo Section -->
+  <section id="demo">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">Demo</div>
+        <h2 class="section-title">See It In Action</h2>
+        <p class="section-subtitle">Real predictions from real engineering systems. No cherry-picking.</p>
+      </div>
+      <div class="demo-grid">
+        <div class="demo-card reveal">
+          <span class="demo-label linear">Linear System</span>
+          <h3>RLC Circuit</h3>
+          <p>Orbit predicts the transient response of a series RLC circuit. The prediction curve overlays the ground truth with machine-precision accuracy &mdash; visually indistinguishable lines, even when zoomed to 12 decimal places.</p>
+          <span class="demo-metric">RMSE: 2.4 &times; 10<sup>-12</sup></span>
+        </div>
+        <div class="demo-card reveal">
+          <span class="demo-label nonlinear">Nonlinear System</span>
+          <h3>Hopf Bifurcation</h3>
+          <p>A challenging limit-cycle system where the dynamics transition from a stable spiral to a periodic orbit. Orbit captures the bifurcation structure and provides calibrated confidence bands around the nonlinear prediction.</p>
+          <span class="demo-metric purple">95% confidence coverage: 96.2%</span>
+        </div>
+      </div>
+      <div class="demo-cta reveal">
+        <a href="#" class="btn btn-primary">Try the live demo &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">Pricing</div>
+        <h2 class="section-title">Simple, transparent pricing</h2>
+        <p class="section-subtitle">Start free. Upgrade when you need more power.</p>
+      </div>
+      <div class="pricing-grid">
+        <!-- Free -->
+        <div class="pricing-card reveal">
+          <div class="plan-name">Free</div>
+          <p class="plan-desc">Get started</p>
+          <div class="price">$0</div>
+          <div class="price-period">forever</div>
+          <ul>
+            <li>Up to 1,000 data points</li>
+            <li>3 built-in systems</li>
+            <li>Basic plots</li>
+            <li>Community support</li>
+          </ul>
+          <a href="#" class="btn btn-secondary">Start Free &rarr;</a>
+        </div>
+        <!-- Pro -->
+        <div class="pricing-card featured reveal">
+          <div class="pricing-badge">Recommended</div>
+          <div class="plan-name">Pro</div>
+          <p class="plan-desc">For individual engineers</p>
+          <div class="price">$149</div>
+          <div class="price-period">per year</div>
+          <ul>
+            <li>Unlimited data points</li>
+            <li>All built-in systems</li>
+            <li>FMU export</li>
+            <li>Confidence bands &amp; uncertainty</li>
+            <li>PDF reports</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="#" class="btn btn-primary">Start Pro Trial &rarr;</a>
+        </div>
+        <!-- Enterprise -->
+        <div class="pricing-card reveal">
+          <div class="plan-name">Enterprise</div>
+          <p class="plan-desc">For teams</p>
+          <div class="price">$799</div>
+          <div class="price-period">per seat / year</div>
+          <ul>
+            <li>Everything in Pro</li>
+            <li>Team management</li>
+            <li>Live data streaming</li>
+            <li>On-prem deployment</li>
+            <li>SSO integration</li>
+            <li>Dedicated support</li>
+          </ul>
+          <a href="#" class="btn btn-secondary">Contact Sales &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Frequently asked questions</h2>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item reveal">
+          <button class="faq-question">
+            How does Orbit work?
+            <span class="faq-chevron">&#x25BE;</span>
+          </button>
+          <div class="faq-answer">
+            <p>Orbit uses data-driven system identification to learn a mathematical model of your system's dynamics. No equations needed &mdash; just measurement data. Under the hood, it builds a Koopman operator model that captures both linear and nonlinear behavior from your time-series data.</p>
+          </div>
+        </div>
+        <div class="faq-item reveal">
+          <button class="faq-question">
+            How accurate is it?
+            <span class="faq-chevron">&#x25BE;</span>
+          </button>
+          <div class="faq-answer">
+            <p>For linear systems (most circuits, vibration problems, control systems), Orbit achieves machine-precision accuracy (RMSE &lt; 10<sup>-10</sup>). For nonlinear systems, accuracy is excellent for short-to-medium prediction horizons, with calibrated confidence bands so you always know how much to trust.</p>
+          </div>
+        </div>
+        <div class="faq-item reveal">
+          <button class="faq-question">
+            What data format do I need?
+            <span class="faq-chevron">&#x25BE;</span>
+          </button>
+          <div class="faq-answer">
+            <p>CSV files with columns for each state variable and rows for each time step. We also support direct connection to common data acquisition systems including NI DAQ, dSPACE, and MATLAB workspace files.</p>
+          </div>
+        </div>
+        <div class="faq-item reveal">
+          <button class="faq-question">
+            Can I use it with MATLAB/Simulink?
+            <span class="faq-chevron">&#x25BE;</span>
+          </button>
+          <div class="faq-answer">
+            <p>Yes. Orbit can export models as FMU (Functional Mock-up Units) that drop directly into Simulink, dSPACE, and other co-simulation environments. You can also import MATLAB <code>.mat</code> files directly as input data.</p>
+          </div>
+        </div>
+        <div class="faq-item reveal">
+          <button class="faq-question">
+            Is my data secure?
+            <span class="faq-chevron">&#x25BE;</span>
+          </button>
+          <div class="faq-answer">
+            <p>Your data never leaves your machine in the desktop version. The cloud version uses end-to-end encryption and SOC 2 compliant infrastructure. Enterprise customers can deploy fully on-prem for maximum security.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <p class="footer-copy">&copy; 2026 Orbit. Built for engineers, by engineers.</p>
+        <ul class="footer-links">
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile nav toggle
+    document.getElementById('navToggle').addEventListener('click', function () {
+      document.getElementById('navLinks').classList.toggle('open');
+    });
+
+    // Close mobile nav on link click
+    document.querySelectorAll('#navLinks a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        document.getElementById('navLinks').classList.remove('open');
+      });
+    });
+
+    // Scroll reveal
+    var reveals = document.querySelectorAll('.reveal');
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.12,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    reveals.forEach(function (el) {
+      observer.observe(el);
+    });
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-question').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var item = btn.parentElement;
+        var isOpen = item.classList.contains('open');
+        // Close all
+        document.querySelectorAll('.faq-item').forEach(function (i) {
+          i.classList.remove('open');
+        });
+        // Toggle current
+        if (!isOpen) {
+          item.classList.add('open');
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
