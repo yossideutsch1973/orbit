@@ -32,6 +32,8 @@ import streamlit as st
 from style import CUSTOM_CSS, MPL_STYLE_PARAMS, ACCENT, SUCCESS
 from analysis import engineering_report, compute_accuracy_pct
 
+from scipy.signal import savgol_filter
+
 from koopsim import KoopSim
 from koopsim.systems import (
     HopfBifurcation,
@@ -51,6 +53,16 @@ for key, default in {"X": None, "Y": None, "dt": None, "system_name": None,
                       "model": None, "report": None, "traj_true": None}.items():
     if key not in st.session_state:
         st.session_state[key] = default
+
+
+def _denoise(data: np.ndarray, window: int = 11, poly_order: int = 3) -> np.ndarray:
+    """Apply Savitzky-Golay filter to each column of data."""
+    window = min(window, data.shape[0])
+    if window % 2 == 0:
+        window -= 1
+    if window < poly_order + 2:
+        return data
+    return savgol_filter(data, window_length=window, polyorder=poly_order, axis=0)
 
 
 def _has_data() -> bool:
@@ -109,6 +121,8 @@ with col_upload:
     st.caption("CSV: columns = variables, rows = time steps")
     uploaded = st.file_uploader("Upload CSV", type=["csv"], label_visibility="collapsed")
     upload_dt = st.number_input("Time step (s)", min_value=1e-6, value=0.01, format="%.6f")
+    denoise_on = st.checkbox("🧹 Denoise input data", value=False,
+                             help="Apply Savitzky-Golay smoothing filter to reduce sensor noise.")
     if uploaded is not None:
         if st.button("Load data", key="btn_csv"):
             content = uploaded.read().decode("utf-8")
@@ -124,6 +138,8 @@ with col_upload:
                     continue
             data = np.loadtxt(io.StringIO("\n".join(lines[start:])), delimiter=",")
             if data.ndim == 2 and data.shape[0] >= 3:
+                if denoise_on:
+                    data = _denoise(data)
                 st.session_state["X"] = data[:-1]
                 st.session_state["Y"] = data[1:]
                 st.session_state["dt"] = upload_dt
