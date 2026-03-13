@@ -112,7 +112,17 @@ with col_upload:
     if uploaded is not None:
         if st.button("Load data", key="btn_csv"):
             content = uploaded.read().decode("utf-8")
-            data = np.loadtxt(io.StringIO(content), delimiter=",")
+            # Skip header rows that aren't numeric
+            lines = content.strip().split("\n")
+            start = 0
+            for i, line in enumerate(lines):
+                try:
+                    [float(v) for v in line.split(",")]
+                    start = i
+                    break
+                except ValueError:
+                    continue
+            data = np.loadtxt(io.StringIO("\n".join(lines[start:])), delimiter=",")
             if data.ndim == 2 and data.shape[0] >= 3:
                 st.session_state["X"] = data[:-1]
                 st.session_state["Y"] = data[1:]
