@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "koopsim"
+version = "0.1.0"
+description = "Koopman Operator Simulation Toolkit — train once, predict any time"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "scikit-learn>=1.2",
+    "tqdm>=4.65",
+    "h5py>=3.8",
+    "click>=8.1",
+]
+
+[project.optional-dependencies]
+neural = ["torch>=2.0", "lightning>=2.0"]
+viz = ["matplotlib>=3.7", "plotly>=5.14", "imageio>=2.31", "imageio-ffmpeg>=0.4"]
+dashboard = ["streamlit>=1.25"]
+dev = ["pytest>=7.3", "ruff>=0.1"]
+all = ["koopsim[neural,viz,dashboard,dev]"]
+
+[project.scripts]
+koopsim = "koopsim.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["koopsim*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow",
+    "neural: marks tests requiring PyTorch",
+]
+
+[tool.ruff]
+line-length = 99
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
