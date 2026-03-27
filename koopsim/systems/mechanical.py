@@ -30,9 +30,7 @@ class SpringMassDamper(DynamicalSystem):
         Mass of each body (uniform).
     """
 
-    def __init__(
-        self, n_masses: int = 3, k: float = 1.0, c: float = 0.1, m: float = 1.0
-    ) -> None:
+    def __init__(self, n_masses: int = 3, k: float = 1.0, c: float = 0.1, m: float = 1.0) -> None:
         self._n = n_masses
         self._k = k
         self._c = c
@@ -95,7 +93,7 @@ class EulerBernoulliBeam(DynamicalSystem):
         Number of finite elements.
     E : float
         Young's modulus [Pa].
-    I : float
+    I_moment : float
         Second moment of area [m^4].
     rho : float
         Material density [kg/m^3].
@@ -109,14 +107,14 @@ class EulerBernoulliBeam(DynamicalSystem):
         self,
         n_elements: int = 5,
         E: float = 2e11,
-        I: float = 1e-6,
+        I_moment: float = 1e-6,
         rho: float = 7800.0,
         A: float = 1e-4,
         L: float = 1.0,
     ) -> None:
         self._n_elements = n_elements
         self._E = E
-        self._I = I
+        self._I = I_moment
         self._rho = rho
         self._A = A
         self._L = L
@@ -151,11 +149,11 @@ class EulerBernoulliBeam(DynamicalSystem):
 
     def rhs(self, t: float, state: np.ndarray) -> np.ndarray:
         n = self._n_elements
-        eta = state[:n]      # modal displacements
+        eta = state[:n]  # modal displacements
         eta_dot = state[n:]  # modal velocities
 
         # Undamped modal equations: eta_ddot_i = -omega_i^2 * eta_i
-        eta_ddot = -(self._omega_n ** 2) * eta
+        eta_ddot = -(self._omega_n**2) * eta
 
         return np.concatenate([eta_dot, eta_ddot])
 
@@ -189,7 +187,7 @@ class VanDerPolOscillator(DynamicalSystem):
 
     def rhs(self, t: float, state: np.ndarray) -> np.ndarray:
         x, x_dot = state
-        x_ddot = self._mu * (1.0 - x ** 2) * x_dot - x
+        x_ddot = self._mu * (1.0 - x**2) * x_dot - x
         return np.array([x_dot, x_ddot])
 
     @property

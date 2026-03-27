@@ -18,7 +18,7 @@ from koopsim.core.constants import (
     EIGENVALUE_STABILITY_THRESHOLD,
     EXPM_SIZE_THRESHOLD,
 )
-from koopsim.core.exceptions import KoopSimError, NotFittedError
+from koopsim.core.exceptions import NotFittedError
 
 logger = logging.getLogger("koopsim")
 
@@ -50,9 +50,7 @@ class PredictionEngine:
             )
 
         if method not in ("auto", "expm", "eigen"):
-            raise ValueError(
-                f"method must be 'auto', 'expm', or 'eigen', got '{method}'."
-            )
+            raise ValueError(f"method must be 'auto', 'expm', or 'eigen', got '{method}'.")
 
         self._model = model
         self._K = model.get_koopman_matrix()
@@ -128,17 +126,13 @@ class PredictionEngine:
                 f"Eigendecomposition may be inaccurate.",
                 stacklevel=2,
             )
-            logger.warning(
-                "High eigenvector condition number: %.4e.", cond
-            )
+            logger.warning("High eigenvector condition number: %.4e.", cond)
 
         # Try to invert V; fall back to expm if singular
         try:
             V_inv = np.linalg.inv(V)
         except np.linalg.LinAlgError:
-            logger.warning(
-                "Eigenvector matrix is singular; falling back to expm backend."
-            )
+            logger.warning("Eigenvector matrix is singular; falling back to expm backend.")
             self._method = "expm"
             self._precompute_expm()
             return
@@ -147,9 +141,7 @@ class PredictionEngine:
         self._V = V
         self._V_inv = V_inv
 
-        logger.debug(
-            "PredictionEngine (eigen): %d eigenvalues computed.", len(eigenvalues)
-        )
+        logger.debug("PredictionEngine (eigen): %d eigenvalues computed.", len(eigenvalues))
 
     # ------------------------------------------------------------------
     # Public API

@@ -51,14 +51,26 @@ class TestGenerate:
         out = str(tmp_path / "data.h5")
         result = runner.invoke(
             main,
-            ["generate", "--system", "hopf", "-o", out, "--dt", "0.01",
-             "--n-steps", "50", "--n-trajectories", "5"],
+            [
+                "generate",
+                "--system",
+                "hopf",
+                "-o",
+                out,
+                "--dt",
+                "0.01",
+                "--n-steps",
+                "50",
+                "--n-trajectories",
+                "5",
+            ],
         )
         assert result.exit_code == 0, result.output
         assert "Generated" in result.output
         assert "snapshot pairs" in result.output
 
         import h5py
+
         with h5py.File(out, "r") as f:
             assert "X" in f
             assert "Y" in f
@@ -69,8 +81,19 @@ class TestGenerate:
         out = str(tmp_path / "data.h5")
         result = runner.invoke(
             main,
-            ["generate", "--system", "spring-mass", "-o", out, "--dt", "0.01",
-             "--n-steps", "30", "--n-trajectories", "3"],
+            [
+                "generate",
+                "--system",
+                "spring-mass",
+                "-o",
+                out,
+                "--dt",
+                "0.01",
+                "--n-steps",
+                "30",
+                "--n-trajectories",
+                "3",
+            ],
         )
         assert result.exit_code == 0, result.output
 
@@ -88,21 +111,32 @@ class TestTrain:
         # Generate data first
         result = runner.invoke(
             main,
-            ["generate", "--system", "hopf", "-o", data_path, "--dt", "0.01",
-             "--n-steps", "50", "--n-trajectories", "5"],
+            [
+                "generate",
+                "--system",
+                "hopf",
+                "-o",
+                data_path,
+                "--dt",
+                "0.01",
+                "--n-steps",
+                "50",
+                "--n-trajectories",
+                "5",
+            ],
         )
         assert result.exit_code == 0, result.output
 
         # Train
         result = runner.invoke(
             main,
-            ["train", "--data", data_path, "--method", "edmd", "--dt", "0.01",
-             "-o", model_path],
+            ["train", "--data", data_path, "--method", "edmd", "--dt", "0.01", "-o", model_path],
         )
         assert result.exit_code == 0, result.output
         assert "Model saved" in result.output
 
         from pathlib import Path
+
         assert Path(model_path).exists()
 
 
@@ -119,20 +153,29 @@ class TestPredict:
         # Generate + Train
         runner.invoke(
             main,
-            ["generate", "--system", "hopf", "-o", data_path, "--dt", "0.01",
-             "--n-steps", "50", "--n-trajectories", "5"],
+            [
+                "generate",
+                "--system",
+                "hopf",
+                "-o",
+                data_path,
+                "--dt",
+                "0.01",
+                "--n-steps",
+                "50",
+                "--n-trajectories",
+                "5",
+            ],
         )
         runner.invoke(
             main,
-            ["train", "--data", data_path, "--method", "edmd", "--dt", "0.01",
-             "-o", model_path],
+            ["train", "--data", data_path, "--method", "edmd", "--dt", "0.01", "-o", model_path],
         )
 
         # Predict
         result = runner.invoke(
             main,
-            ["predict", "--model", model_path, "--initial-state", "1.0,0.0",
-             "--time", "0.1"],
+            ["predict", "--model", model_path, "--initial-state", "1.0,0.0", "--time", "0.1"],
         )
         assert result.exit_code == 0, result.output
         assert "State at t=0.1" in result.output
@@ -151,13 +194,23 @@ class TestInfo:
         # Generate + Train
         runner.invoke(
             main,
-            ["generate", "--system", "hopf", "-o", data_path, "--dt", "0.01",
-             "--n-steps", "50", "--n-trajectories", "5"],
+            [
+                "generate",
+                "--system",
+                "hopf",
+                "-o",
+                data_path,
+                "--dt",
+                "0.01",
+                "--n-steps",
+                "50",
+                "--n-trajectories",
+                "5",
+            ],
         )
         runner.invoke(
             main,
-            ["train", "--data", data_path, "--method", "edmd", "--dt", "0.01",
-             "-o", model_path],
+            ["train", "--data", data_path, "--method", "edmd", "--dt", "0.01", "-o", model_path],
         )
 
         # Info
@@ -182,24 +235,33 @@ class TestFullPipeline:
         # Generate
         result = runner.invoke(
             main,
-            ["generate", "--system", "rlc", "-o", data_path, "--dt", "0.01",
-             "--n-steps", "100", "--n-trajectories", "5"],
+            [
+                "generate",
+                "--system",
+                "rlc",
+                "-o",
+                data_path,
+                "--dt",
+                "0.01",
+                "--n-steps",
+                "100",
+                "--n-trajectories",
+                "5",
+            ],
         )
         assert result.exit_code == 0, result.output
 
         # Train
         result = runner.invoke(
             main,
-            ["train", "--data", data_path, "--method", "edmd", "--dt", "0.01",
-             "-o", model_path],
+            ["train", "--data", data_path, "--method", "edmd", "--dt", "0.01", "-o", model_path],
         )
         assert result.exit_code == 0, result.output
 
         # Predict
         result = runner.invoke(
             main,
-            ["predict", "--model", model_path, "--initial-state", "0.5,0.0",
-             "--time", "0.5"],
+            ["predict", "--model", model_path, "--initial-state", "0.5,0.0", "--time", "0.5"],
         )
         assert result.exit_code == 0, result.output
         assert "State at t=0.5" in result.output
@@ -222,13 +284,25 @@ class TestCSVFormat:
         # Generate as CSV
         result = runner.invoke(
             main,
-            ["generate", "--system", "hopf", "-o", csv_path, "--dt", "0.01",
-             "--n-steps", "50", "--n-trajectories", "5"],
+            [
+                "generate",
+                "--system",
+                "hopf",
+                "-o",
+                csv_path,
+                "--dt",
+                "0.01",
+                "--n-steps",
+                "50",
+                "--n-trajectories",
+                "5",
+            ],
         )
         assert result.exit_code == 0, result.output
 
         # Verify CSV file is readable
         from pathlib import Path
+
         assert Path(csv_path).exists()
         data = np.loadtxt(csv_path, delimiter=",")
         assert data.ndim == 2
@@ -237,8 +311,7 @@ class TestCSVFormat:
         # Train from CSV
         result = runner.invoke(
             main,
-            ["train", "--data", csv_path, "--method", "edmd", "--dt", "0.01",
-             "-o", model_path],
+            ["train", "--data", csv_path, "--method", "edmd", "--dt", "0.01", "-o", model_path],
         )
         assert result.exit_code == 0, result.output
         assert "Model saved" in result.output
@@ -257,13 +330,25 @@ class TestNPYFormat:
         # Generate as NPY
         result = runner.invoke(
             main,
-            ["generate", "--system", "hopf", "-o", npy_path, "--dt", "0.01",
-             "--n-steps", "50", "--n-trajectories", "5"],
+            [
+                "generate",
+                "--system",
+                "hopf",
+                "-o",
+                npy_path,
+                "--dt",
+                "0.01",
+                "--n-steps",
+                "50",
+                "--n-trajectories",
+                "5",
+            ],
         )
         assert result.exit_code == 0, result.output
 
         # Verify NPY file is loadable
         from pathlib import Path
+
         assert Path(npy_path).exists()
         loaded = np.load(npy_path, allow_pickle=True).item()
         assert "X" in loaded
@@ -272,8 +357,7 @@ class TestNPYFormat:
         # Train from NPY
         result = runner.invoke(
             main,
-            ["train", "--data", npy_path, "--method", "edmd", "--dt", "0.01",
-             "-o", model_path],
+            ["train", "--data", npy_path, "--method", "edmd", "--dt", "0.01", "-o", model_path],
         )
         assert result.exit_code == 0, result.output
         assert "Model saved" in result.output
@@ -293,32 +377,52 @@ class TestValidate:
         # Generate training data
         result = runner.invoke(
             main,
-            ["generate", "--system", "hopf", "-o", train_path, "--dt", "0.01",
-             "--n-steps", "50", "--n-trajectories", "5"],
+            [
+                "generate",
+                "--system",
+                "hopf",
+                "-o",
+                train_path,
+                "--dt",
+                "0.01",
+                "--n-steps",
+                "50",
+                "--n-trajectories",
+                "5",
+            ],
         )
         assert result.exit_code == 0, result.output
 
         # Generate separate test data
         result = runner.invoke(
             main,
-            ["generate", "--system", "hopf", "-o", test_path, "--dt", "0.01",
-             "--n-steps", "30", "--n-trajectories", "3"],
+            [
+                "generate",
+                "--system",
+                "hopf",
+                "-o",
+                test_path,
+                "--dt",
+                "0.01",
+                "--n-steps",
+                "30",
+                "--n-trajectories",
+                "3",
+            ],
         )
         assert result.exit_code == 0, result.output
 
         # Train model
         result = runner.invoke(
             main,
-            ["train", "--data", train_path, "--method", "edmd", "--dt", "0.01",
-             "-o", model_path],
+            ["train", "--data", train_path, "--method", "edmd", "--dt", "0.01", "-o", model_path],
         )
         assert result.exit_code == 0, result.output
 
         # Validate
         result = runner.invoke(
             main,
-            ["validate", "--model", model_path, "--test-data", test_path,
-             "--dt", "0.01"],
+            ["validate", "--model", model_path, "--test-data", test_path, "--dt", "0.01"],
         )
         assert result.exit_code == 0, result.output
         assert "Validation rmse:" in result.output
@@ -330,20 +434,39 @@ class TestValidate:
         # Generate + Train
         runner.invoke(
             main,
-            ["generate", "--system", "hopf", "-o", data_path, "--dt", "0.01",
-             "--n-steps", "50", "--n-trajectories", "5"],
+            [
+                "generate",
+                "--system",
+                "hopf",
+                "-o",
+                data_path,
+                "--dt",
+                "0.01",
+                "--n-steps",
+                "50",
+                "--n-trajectories",
+                "5",
+            ],
         )
         runner.invoke(
             main,
-            ["train", "--data", data_path, "--method", "edmd", "--dt", "0.01",
-             "-o", model_path],
+            ["train", "--data", data_path, "--method", "edmd", "--dt", "0.01", "-o", model_path],
         )
 
         # Validate with MAE
         result = runner.invoke(
             main,
-            ["validate", "--model", model_path, "--test-data", data_path,
-             "--dt", "0.01", "--metric", "mae"],
+            [
+                "validate",
+                "--model",
+                model_path,
+                "--test-data",
+                data_path,
+                "--dt",
+                "0.01",
+                "--metric",
+                "mae",
+            ],
         )
         assert result.exit_code == 0, result.output
         assert "Validation mae:" in result.output

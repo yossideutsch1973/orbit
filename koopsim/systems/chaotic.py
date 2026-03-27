@@ -34,9 +34,7 @@ class LorenzAttractor(DynamicalSystem):
         Geometric factor. Default 8/3 (classic value).
     """
 
-    def __init__(
-        self, sigma: float = 10.0, rho: float = 28.0, beta: float = 8.0 / 3.0
-    ) -> None:
+    def __init__(self, sigma: float = 10.0, rho: float = 28.0, beta: float = 8.0 / 3.0) -> None:
         self._sigma = sigma
         self._rho = rho
         self._beta = beta

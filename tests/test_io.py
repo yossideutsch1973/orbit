@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import h5py
 import numpy as np
 import pytest
-import h5py
 
 from koopsim.core.edmd import EDMD
 from koopsim.utils.dictionary import (
@@ -13,8 +13,7 @@ from koopsim.utils.dictionary import (
     PolynomialDictionary,
     RBFDictionary,
 )
-from koopsim.utils.io import save_model, load_model
-
+from koopsim.utils.io import load_model, save_model
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -35,10 +34,12 @@ def fitted_composite_model(rng):
     """EDMD with CompositeDictionary (Poly + RBF) fitted on rotation system."""
     theta = np.pi / 6
     dt = 0.1
-    R = np.array([
-        [np.cos(theta), -np.sin(theta)],
-        [np.sin(theta), np.cos(theta)],
-    ])
+    R = np.array(
+        [
+            [np.cos(theta), -np.sin(theta)],
+            [np.sin(theta), np.cos(theta)],
+        ]
+    )
     n_samples = 200
     X = rng.standard_normal((n_samples, 2))
     Y = X @ R.T
@@ -127,9 +128,7 @@ class TestCompositeSaveLoad:
         assert loaded.n_koopman_dims == model.n_koopman_dims
         assert loaded.dt == model.dt
 
-    def test_loaded_composite_same_predictions(
-        self, fitted_composite_model, tmp_path
-    ):
+    def test_loaded_composite_same_predictions(self, fitted_composite_model, tmp_path):
         """Loaded composite model should produce the same predictions."""
         model, X, Y = fitted_composite_model
         path = tmp_path / "model_composite_pred.koop"
@@ -145,9 +144,7 @@ class TestCompositeSaveLoad:
 
         np.testing.assert_allclose(Y_pred_loaded, Y_pred_orig, atol=1e-10)
 
-    def test_composite_dictionary_lift_matches(
-        self, fitted_composite_model, tmp_path
-    ):
+    def test_composite_dictionary_lift_matches(self, fitted_composite_model, tmp_path):
         """Loaded model's lift should produce the same lifted representation."""
         model, X, _ = fitted_composite_model
         path = tmp_path / "model_composite_lift.koop"

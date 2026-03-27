@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 import logging
+from abc import ABC, abstractmethod
 
 import numpy as np
 from scipy.integrate import solve_ivp
@@ -74,9 +74,7 @@ class DynamicalSystem(ABC):
             atol=1e-12,
         )
         if sol.status != 0:
-            logger.warning(
-                "ODE solver did not converge for %s: %s", self.name, sol.message
-            )
+            logger.warning("ODE solver did not converge for %s: %s", self.name, sol.message)
         return sol.y.T  # (n_steps+1, state_dim)
 
     def generate_snapshots(
@@ -143,7 +141,7 @@ class DynamicalSystem(ABC):
             traj = self.generate_trajectory(ic, dt, n_steps)
             # Extract consecutive snapshot pairs
             X_parts.append(traj[:-1])  # (n_steps, state_dim)
-            Y_parts.append(traj[1:])   # (n_steps, state_dim)
+            Y_parts.append(traj[1:])  # (n_steps, state_dim)
 
         X = np.vstack(X_parts)
         Y = np.vstack(Y_parts)

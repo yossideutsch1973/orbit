@@ -55,7 +55,7 @@ class ModelValidator:
         diff = Y_pred - Y_test
 
         if metric == "rmse":
-            return float(np.sqrt(np.mean(diff ** 2)))
+            return float(np.sqrt(np.mean(diff**2)))
         elif metric == "mae":
             return float(np.mean(np.abs(diff)))
         elif metric == "relative":
@@ -64,9 +64,7 @@ class ModelValidator:
                 return float(np.linalg.norm(diff, "fro"))
             return float(np.linalg.norm(diff, "fro") / norm_Y)
         else:
-            raise ValueError(
-                f"Unknown metric '{metric}'. Choose from 'rmse', 'mae', 'relative'."
-            )
+            raise ValueError(f"Unknown metric '{metric}'. Choose from 'rmse', 'mae', 'relative'.")
 
     @staticmethod
     def multi_step_error(

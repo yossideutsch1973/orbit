@@ -56,7 +56,7 @@ class DoubleGyre(DynamicalSystem):
         a = self._epsilon * np.sin(self._omega * t)
         b = 1.0 - 2.0 * a
 
-        f = a * x ** 2 + b * x
+        f = a * x**2 + b * x
         df_dx = 2.0 * a * x + b
 
         dx = -np.pi * self._A * np.sin(np.pi * f) * np.cos(np.pi * y)

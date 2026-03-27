@@ -17,7 +17,6 @@ from koopsim.core.constants import (
 )
 from koopsim.core.exceptions import DimensionMismatchError, NotFittedError
 from koopsim.utils.dictionary import (
-    CompositeDictionary,
     IdentityDictionary,
     ObservableDictionary,
 )
@@ -100,8 +99,7 @@ class EDMD(KoopmanModel):
             )
         if X.shape != Y.shape:
             raise DimensionMismatchError(
-                f"X and Y must have the same shape. Got X.shape={X.shape}, "
-                f"Y.shape={Y.shape}."
+                f"X and Y must have the same shape. Got X.shape={X.shape}, Y.shape={Y.shape}."
             )
         if dt <= 0:
             raise ValueError(f"dt must be positive, got {dt}.")
@@ -257,16 +255,14 @@ class EDMD(KoopmanModel):
         # Optional SVD rank truncation
         if self._svd_rank is not None and self._svd_rank < len(sigma):
             rank = self._svd_rank
-            logger.info(
-                "Truncating SVD: %d -> %d singular values.", len(sigma), rank
-            )
+            logger.info("Truncating SVD: %d -> %d singular values.", len(sigma), rank)
             U = U[:, :rank]
             sigma = sigma[:rank]
             Vt = Vt[:rank, :]
 
         # Tikhonov filter factors: sigma_i / (sigma_i^2 + alpha)
         alpha = self._regularization
-        filter_factors = sigma / (sigma ** 2 + alpha)
+        filter_factors = sigma / (sigma**2 + alpha)
 
         # K = V @ diag(filter_factors) @ U^T @ Psi_Y
         #   = Vt.T @ diag(filter_factors) @ U.T @ Psi_Y

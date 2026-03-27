@@ -7,8 +7,7 @@ import pytest
 
 from koopsim import KoopSim
 from koopsim.core.exceptions import NotFittedError
-from koopsim.systems import HopfBifurcation, SpringMassDamper
-
+from koopsim.systems import HopfBifurcation
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -20,10 +19,12 @@ def simple_rotation_data(rng):
     """2D rotation snapshot pairs for quick EDMD tests."""
     theta = np.pi / 6
     dt = 0.1
-    R = np.array([
-        [np.cos(theta), -np.sin(theta)],
-        [np.sin(theta), np.cos(theta)],
-    ])
+    R = np.array(
+        [
+            [np.cos(theta), -np.sin(theta)],
+            [np.sin(theta), np.cos(theta)],
+        ]
+    )
     n_samples = 200
     X = rng.standard_normal((n_samples, 2))
     Y = X @ R.T

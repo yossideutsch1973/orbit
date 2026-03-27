@@ -7,9 +7,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from koopsim.core.exceptions import NotFittedError
-from koopsim.core.neural_koopman import NeuralKoopman
-
+from koopsim.core.exceptions import NotFittedError  # noqa: E402
+from koopsim.core.neural_koopman import NeuralKoopman  # noqa: E402
 
 # -------------------------------------------------------------------------
 # 1. Reconstruction quality on Hopf data
@@ -49,9 +48,7 @@ class TestReconstruction:
         Z = model.lift(X)
         X_rec = model.unlift(Z)
         rel_error = np.linalg.norm(X_rec - X) / np.linalg.norm(X)
-        assert rel_error < 0.3, (
-            f"Reconstruction relative error too large: {rel_error:.4f}"
-        )
+        assert rel_error < 0.3, f"Reconstruction relative error too large: {rel_error:.4f}"
 
 
 # -------------------------------------------------------------------------
@@ -69,10 +66,12 @@ class TestEigenvalueRecovery:
         X, Y, dt, theta = simple_linear_system
 
         # True rotation matrix (row-vector convention: Y = X @ R.T => K = R.T)
-        R = np.array([
-            [np.cos(theta), -np.sin(theta)],
-            [np.sin(theta), np.cos(theta)],
-        ])
+        R = np.array(
+            [
+                [np.cos(theta), -np.sin(theta)],
+                [np.sin(theta), np.cos(theta)],
+            ]
+        )
         true_eigs = np.sort_complex(np.linalg.eigvals(R.T))
 
         model = NeuralKoopman(
@@ -162,8 +161,7 @@ class TestComparisonVsEDMD:
         # Neural should be within 5x of EDMD (not necessarily better, but
         # comparable — the main check is that it works end-to-end)
         assert error_neural < error_edmd * 5.0, (
-            f"Neural error ({error_neural:.4f}) much worse than "
-            f"EDMD error ({error_edmd:.4f})"
+            f"Neural error ({error_neural:.4f}) much worse than EDMD error ({error_edmd:.4f})"
         )
 
 

@@ -53,9 +53,7 @@ class TestPlotTrajectoryComparison:
         import matplotlib.figure
 
         predicted = trajectory_2d + rng.normal(0, 0.05, trajectory_2d.shape)
-        fig = plot_trajectory_comparison(
-            times, trajectory_2d, predicted, labels=["x", "y"]
-        )
+        fig = plot_trajectory_comparison(times, trajectory_2d, predicted, labels=["x", "y"])
         assert isinstance(fig, matplotlib.figure.Figure)
 
     def test_1d_trajectories(self, times):
@@ -193,9 +191,7 @@ class TestPlotlyBackend:
         import plotly.graph_objects as go
 
         predicted = trajectory_2d + rng.normal(0, 0.05, trajectory_2d.shape)
-        fig = plot_trajectory_comparison(
-            times, trajectory_2d, predicted, backend="plotly"
-        )
+        fig = plot_trajectory_comparison(times, trajectory_2d, predicted, backend="plotly")
         assert isinstance(fig, go.Figure)
 
     def test_phase_portrait(self, trajectory_2d):

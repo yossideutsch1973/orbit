@@ -36,8 +36,7 @@ class MonteCarloUQ:
     ) -> None:
         if noise_model not in ("gaussian", "uniform"):
             raise ValueError(
-                f"Unknown noise_model '{noise_model}'. "
-                "Choose 'gaussian' or 'uniform'."
+                f"Unknown noise_model '{noise_model}'. Choose 'gaussian' or 'uniform'."
             )
         if n_samples < 1:
             raise ValueError("n_samples must be >= 1.")
@@ -88,10 +87,7 @@ class MonteCarloUQ:
         # Compute statistics
         mean = np.mean(predictions, axis=0)
         std = np.std(predictions, axis=0)
-        percentiles = {
-            p: np.percentile(predictions, p, axis=0)
-            for p in (5, 25, 50, 75, 95)
-        }
+        percentiles = {p: np.percentile(predictions, p, axis=0) for p in (5, 25, 50, 75, 95)}
 
         return {
             "mean": mean,
@@ -116,7 +112,5 @@ class MonteCarloUQ:
         if self._noise_model == "gaussian":
             noise = self._rng.normal(0, self._noise_scale, size=x0.shape)
         else:  # uniform
-            noise = self._rng.uniform(
-                -self._noise_scale, self._noise_scale, size=x0.shape
-            )
+            noise = self._rng.uniform(-self._noise_scale, self._noise_scale, size=x0.shape)
         return x0 + noise

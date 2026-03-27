@@ -43,9 +43,7 @@ def save_model(model: KoopmanModel, path: str | Path) -> None:
     elif isinstance(model, EDMD):
         _save_edmd_model(model, path)
     else:
-        raise KoopSimError(
-            f"Unsupported model type for saving: {type(model).__name__}."
-        )
+        raise KoopSimError(f"Unsupported model type for saving: {type(model).__name__}.")
 
 
 def _save_edmd_model(model, path: Path) -> None:
@@ -77,8 +75,7 @@ def _save_neural_model(model, path: Path) -> None:
         import torch
     except ImportError as exc:
         raise KoopSimError(
-            "Saving NeuralKoopman requires PyTorch. "
-            "Install it with: pip install koopsim[neural]"
+            "Saving NeuralKoopman requires PyTorch. Install it with: pip install koopsim[neural]"
         ) from exc
 
     logger.info("Saving NeuralKoopman model to %s", path)
@@ -143,9 +140,7 @@ def load_model(path: str | Path) -> KoopmanModel:
         elif model_class == "EDMD":
             model = _load_edmd_model(f)
         else:
-            raise KoopSimError(
-                f"Unsupported model class in file: {model_class}."
-            )
+            raise KoopSimError(f"Unsupported model class in file: {model_class}.")
 
     logger.info("Model loaded successfully from %s", path)
     return model
@@ -186,8 +181,7 @@ def _load_neural_model(f: h5py.File):
         import torch
     except ImportError as exc:
         raise KoopSimError(
-            "Loading NeuralKoopman requires PyTorch. "
-            "Install it with: pip install koopsim[neural]"
+            "Loading NeuralKoopman requires PyTorch. Install it with: pip install koopsim[neural]"
         ) from exc
 
     from koopsim.core.neural_koopman import NeuralKoopman, _create_autoencoder
@@ -299,7 +293,6 @@ def _save_dictionary_data(f: h5py.File, dictionary) -> None:
     """
     from koopsim.utils.dictionary import (
         CompositeDictionary,
-        RBFDictionary,
     )
 
     if isinstance(dictionary, CompositeDictionary):
@@ -323,7 +316,6 @@ def _save_sub_dictionary_data(grp: h5py.Group, dictionary) -> None:
         The dictionary whose data to save.
     """
     from koopsim.utils.dictionary import (
-        PolynomialDictionary,
         RBFDictionary,
     )
 

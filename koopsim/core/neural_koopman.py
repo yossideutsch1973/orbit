@@ -22,10 +22,10 @@ logger = logging.getLogger("koopsim")
 def _import_torch():
     """Lazy import of torch and lightning with a clear error message."""
     try:
+        import lightning as pl
         import torch
         import torch.nn as nn
         import torch.nn.functional as F
-        import lightning as pl
     except ImportError as exc:
         raise ImportError(
             "Neural Koopman requires PyTorch and Lightning. "
@@ -252,8 +252,7 @@ class NeuralKoopman(KoopmanModel):
             from koopsim.core.exceptions import DimensionMismatchError
 
             raise DimensionMismatchError(
-                f"X and Y must have the same shape. Got X.shape={X.shape}, "
-                f"Y.shape={Y.shape}."
+                f"X and Y must have the same shape. Got X.shape={X.shape}, Y.shape={Y.shape}."
             )
         if dt <= 0:
             raise ValueError(f"dt must be positive, got {dt}.")
@@ -325,9 +324,7 @@ class NeuralKoopman(KoopmanModel):
             If the model has not been fitted.
         """
         if self.K_ is None:
-            raise NotFittedError(
-                "NeuralKoopman has not been fitted. Call fit() first."
-            )
+            raise NotFittedError("NeuralKoopman has not been fitted. Call fit() first.")
         return self.K_
 
     def lift(self, X: np.ndarray) -> np.ndarray:
@@ -347,9 +344,7 @@ class NeuralKoopman(KoopmanModel):
             If the model has not been fitted.
         """
         if self._autoencoder is None:
-            raise NotFittedError(
-                "NeuralKoopman has not been fitted. Call fit() first."
-            )
+            raise NotFittedError("NeuralKoopman has not been fitted. Call fit() first.")
 
         torch, nn, F, pl = _import_torch()
 
@@ -384,9 +379,7 @@ class NeuralKoopman(KoopmanModel):
             If the model has not been fitted.
         """
         if self._autoencoder is None:
-            raise NotFittedError(
-                "NeuralKoopman has not been fitted. Call fit() first."
-            )
+            raise NotFittedError("NeuralKoopman has not been fitted. Call fit() first.")
 
         torch, nn, F, pl = _import_torch()
 
@@ -408,25 +401,19 @@ class NeuralKoopman(KoopmanModel):
     def n_state_dims(self) -> int:
         """Number of original state-space dimensions."""
         if self._n_state_dims is None:
-            raise NotFittedError(
-                "NeuralKoopman has not been fitted. Call fit() first."
-            )
+            raise NotFittedError("NeuralKoopman has not been fitted. Call fit() first.")
         return self._n_state_dims
 
     @property
     def n_koopman_dims(self) -> int:
         """Number of Koopman latent dimensions."""
         if self.K_ is None:
-            raise NotFittedError(
-                "NeuralKoopman has not been fitted. Call fit() first."
-            )
+            raise NotFittedError("NeuralKoopman has not been fitted. Call fit() first.")
         return self._latent_dim
 
     @property
     def dt(self) -> float:
         """Time step between snapshot pairs used for fitting."""
         if self._dt is None:
-            raise NotFittedError(
-                "NeuralKoopman has not been fitted. Call fit() first."
-            )
+            raise NotFittedError("NeuralKoopman has not been fitted. Call fit() first.")
         return self._dt
