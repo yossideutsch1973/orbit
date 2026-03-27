@@ -171,3 +171,76 @@ class TestCompositeSaveLoad:
             assert "K" in f
             assert "dictionary" in f
             assert f.attrs["model_class"] == "EDMD"
+
+
+# ---------------------------------------------------------------------------
+# Save/load roundtrip with NeuralKoopman
+# ---------------------------------------------------------------------------
+
+torch = pytest.importorskip("torch")
+
+
+@pytest.mark.neural
+class TestNeuralSaveLoad:
+    """Save/load roundtrip with NeuralKoopman."""
+
+    @pytest.fixture
+    def fitted_neural_model(self, simple_linear_system):
+        from koopsim.core.neural_koopman import NeuralKoopman
+
+        X, Y, dt, _ = simple_linear_system
+        model = NeuralKoopman(
+            latent_dim=4,
+            encoder_hidden=[16, 16],
+            decoder_hidden=[16, 16],
+            lr=1e-3,
+            max_epochs=10,
+            batch_size=64,
+            verbose=False,
+        )
+        model.fit(X, Y, dt)
+        return model, X
+
+    def test_roundtrip_neural(self, fitted_neural_model, tmp_path):
+        """Save and load should produce an equivalent model."""
+        model, X = fitted_neural_model
+        path = tmp_path / "model_neural.koop"
+
+        save_model(model, path)
+        loaded = load_model(path)
+
+        from koopsim.core.neural_koopman import NeuralKoopman
+
+        assert isinstance(loaded, NeuralKoopman)
+        np.testing.assert_array_equal(loaded.K_, model.K_)
+        assert loaded.n_state_dims == model.n_state_dims
+        assert loaded.n_koopman_dims == model.n_koopman_dims
+        assert loaded.dt == model.dt
+
+    def test_loaded_neural_same_predictions(self, fitted_neural_model, tmp_path):
+        """Loaded neural model should produce the same lift/unlift results."""
+        model, X = fitted_neural_model
+        path = tmp_path / "model_neural_pred.koop"
+
+        save_model(model, path)
+        loaded = load_model(path)
+
+        Z_orig = model.lift(X[:10])
+        Z_loaded = loaded.lift(X[:10])
+        np.testing.assert_allclose(Z_loaded, Z_orig, atol=1e-6)
+
+        X_rec_orig = model.unlift(Z_orig)
+        X_rec_loaded = loaded.unlift(Z_loaded)
+        np.testing.assert_allclose(X_rec_loaded, X_rec_orig, atol=1e-6)
+
+    def test_file_is_valid_hdf5(self, fitted_neural_model, tmp_path):
+        """Saved neural model file should be valid HDF5."""
+        model, _ = fitted_neural_model
+        path = tmp_path / "model_neural_hdf5.koop"
+
+        save_model(model, path)
+
+        with h5py.File(path, "r") as f:
+            assert "K" in f
+            assert "autoencoder_state_dict" in f
+            assert f.attrs["model_class"] == "NeuralKoopman"

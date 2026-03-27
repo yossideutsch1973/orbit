@@ -7,6 +7,7 @@ import pytest
 
 from koopsim.core.edmd import EDMD
 from koopsim.systems.base import DynamicalSystem
+from koopsim.systems.chaotic import LorenzAttractor, LotkaVolterra
 from koopsim.systems.circuit import RLCCircuit
 from koopsim.systems.fluid_grid import DoubleGyre
 from koopsim.systems.fluid_particles import HopfBifurcation, PointVortexSystem
@@ -30,6 +31,8 @@ ALL_SYSTEMS: list[tuple[DynamicalSystem, np.ndarray]] = [
     (EulerBernoulliBeam(n_elements=3), np.array([0.01, 0.0, 0.0, 0.0, 0.0, 0.0])),
     (VanDerPolOscillator(mu=1.0), np.array([1.0, 0.0])),
     (RLCCircuit(R=1.0, L=1.0, C=1.0), np.array([1.0, 0.0])),
+    (LorenzAttractor(), np.array([1.0, 1.0, 1.0])),
+    (LotkaVolterra(), np.array([2.0, 1.0])),
 ]
 
 
@@ -284,3 +287,98 @@ class TestPointVortex:
     def test_invalid_strengths_length(self):
         with pytest.raises(ValueError, match="must match"):
             PointVortexSystem(n_vortices=3, strengths=np.array([1.0, -1.0]))
+
+
+# ---------------------------------------------------------------------------
+# 9. Lorenz attractor — bounded chaotic trajectory
+# ---------------------------------------------------------------------------
+
+
+class TestLorenzAttractor:
+    """Lorenz attractor should generate bounded chaotic trajectories."""
+
+    def test_trajectory_bounded(self):
+        lorenz = LorenzAttractor()
+        x0 = np.array([1.0, 1.0, 1.0])
+        dt = 0.01
+        n_steps = 5000
+
+        traj = lorenz.generate_trajectory(x0, dt, n_steps)
+        assert traj.shape == (n_steps + 1, 3)
+        assert np.all(np.isfinite(traj)), "Lorenz trajectory contains non-finite values"
+        # Lorenz attractor stays within a bounded region
+        assert np.max(np.abs(traj)) < 100.0, "Lorenz trajectory blew up"
+
+    def test_state_dim(self):
+        lorenz = LorenzAttractor()
+        assert lorenz.state_dim == 3
+
+    def test_custom_parameters(self):
+        lorenz = LorenzAttractor(sigma=10.0, rho=15.0, beta=2.0)
+        x0 = np.array([1.0, 0.0, 0.0])
+        traj = lorenz.generate_trajectory(x0, dt=0.01, n_steps=100)
+        assert np.all(np.isfinite(traj))
+
+    def test_sensitive_dependence(self):
+        """Two nearby initial conditions should diverge (hallmark of chaos)."""
+        lorenz = LorenzAttractor()
+        x0a = np.array([1.0, 1.0, 1.0])
+        x0b = np.array([1.0, 1.0, 1.0 + 1e-10])
+        dt = 0.01
+        n_steps = 5000
+
+        traj_a = lorenz.generate_trajectory(x0a, dt, n_steps)
+        traj_b = lorenz.generate_trajectory(x0b, dt, n_steps)
+
+        # Initially nearly identical
+        assert np.linalg.norm(traj_a[0] - traj_b[0]) < 1e-9
+        # Should diverge significantly by the end
+        final_diff = np.linalg.norm(traj_a[-1] - traj_b[-1])
+        assert final_diff > 1.0, (
+            f"Trajectories did not diverge enough: diff = {final_diff:.2e}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# 10. Lotka-Volterra — conservation and positivity
+# ---------------------------------------------------------------------------
+
+
+class TestLotkaVolterra:
+    """Lotka-Volterra should produce positive, periodic-like trajectories."""
+
+    def test_trajectory_positive(self):
+        """Populations should remain positive for reasonable initial conditions."""
+        lv = LotkaVolterra()
+        x0 = np.array([2.0, 1.0])
+        dt = 0.01
+        n_steps = 5000
+
+        traj = lv.generate_trajectory(x0, dt, n_steps)
+        assert traj.shape == (n_steps + 1, 2)
+        assert np.all(np.isfinite(traj)), "Lotka-Volterra trajectory has non-finite values"
+        assert np.all(traj > 0), "Populations went negative"
+
+    def test_state_dim(self):
+        lv = LotkaVolterra()
+        assert lv.state_dim == 2
+
+    def test_conserved_quantity(self):
+        """The Lotka-Volterra system conserves H = delta*x - gamma*ln(x) + beta*y - alpha*ln(y)."""
+        alpha, beta, gamma, delta = 1.0, 0.5, 0.5, 0.25
+        lv = LotkaVolterra(alpha=alpha, beta=beta, gamma=gamma, delta=delta)
+        x0 = np.array([2.0, 1.0])
+        dt = 0.005
+        n_steps = 10000
+
+        traj = lv.generate_trajectory(x0, dt, n_steps)
+
+        def hamiltonian(state):
+            x, y = state
+            return delta * x - gamma * np.log(x) + beta * y - alpha * np.log(y)
+
+        H = np.array([hamiltonian(traj[i]) for i in range(len(traj))])
+        relative_variation = (H.max() - H.min()) / abs(H[0])
+        assert relative_variation < 1e-4, (
+            f"Conserved quantity not conserved: relative variation = {relative_variation:.2e}"
+        )
