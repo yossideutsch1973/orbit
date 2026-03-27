@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from koopsim.systems.base import DynamicalSystem
+from koopsim.systems.chaotic import LorenzAttractor, LotkaVolterra
 from koopsim.systems.circuit import RLCCircuit
 from koopsim.systems.fluid_grid import DoubleGyre
 from koopsim.systems.fluid_particles import HopfBifurcation, PointVortexSystem
@@ -17,6 +18,8 @@ __all__ = [
     "DoubleGyre",
     "EulerBernoulliBeam",
     "HopfBifurcation",
+    "LorenzAttractor",
+    "LotkaVolterra",
     "PointVortexSystem",
     "RLCCircuit",
     "SpringMassDamper",
