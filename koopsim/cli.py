@@ -91,7 +91,8 @@ def _save_data(path: str, X: np.ndarray, Y: np.ndarray) -> None:
     if ext == ".csv":
         # Reconstruct trajectory: X rows, then the last Y row
         trajectory = np.vstack([X, Y[-1:]])
-        np.savetxt(p, trajectory, delimiter=",", header="KoopSim trajectory data (rows=timesteps, cols=state dims)")
+        header = "KoopSim trajectory data (rows=timesteps, cols=state dims)"
+        np.savetxt(p, trajectory, delimiter=",", header=header)
     elif ext == ".npy":
         np.save(p, {"X": X, "Y": Y})
     elif ext in (".h5", ".hdf5"):
@@ -126,7 +127,12 @@ def main(ctx, verbose):
 
 
 @main.command()
-@click.option("--data", required=True, type=click.Path(exists=True), help="Training data file (CSV, NPY, or HDF5)")
+@click.option(
+    "--data",
+    required=True,
+    type=click.Path(exists=True),
+    help="Training data file (CSV, NPY, or HDF5)",
+)
 @click.option("--method", type=click.Choice(["edmd", "neural"]), default="edmd")
 @click.option("--dt", required=True, type=float, help="Time step between snapshots")
 @click.option("--output", "-o", default="model.koop", help="Output model file")
@@ -204,7 +210,17 @@ def validate(ctx, model, test_data, dt, metric):
 @click.option(
     "--system",
     required=True,
-    type=click.Choice(["hopf", "double-gyre", "spring-mass", "rlc", "vanderpol", "beam", "point-vortex"]),
+    type=click.Choice(
+        [
+            "hopf",
+            "double-gyre",
+            "spring-mass",
+            "rlc",
+            "vanderpol",
+            "beam",
+            "point-vortex",
+        ]
+    ),
 )
 @click.option("--output", "-o", required=True, help="Output data file (.csv, .npy, or .h5)")
 @click.option("--dt", type=float, default=0.01)

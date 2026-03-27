@@ -9,7 +9,6 @@ from koopsim.core.edmd import EDMD
 from koopsim.core.uncertainty import MonteCarloUQ
 from koopsim.utils.dictionary import IdentityDictionary
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -83,8 +82,10 @@ class TestMonteCarloUQ:
         result = uq.predict_with_uncertainty(x0, t=dt)
 
         np.testing.assert_allclose(
-            result["mean"], deterministic, atol=0.01,
-            err_msg="MC mean should be close to deterministic prediction for small noise."
+            result["mean"],
+            deterministic,
+            atol=0.01,
+            err_msg="MC mean should be close to deterministic prediction for small noise.",
         )
 
     def test_std_scales_with_noise(self, rotation_model):
@@ -116,9 +117,7 @@ class TestMonteCarloUQ:
     def test_gaussian_noise_model(self, rotation_model):
         """Gaussian noise model should work without errors."""
         model, dt = rotation_model
-        uq = MonteCarloUQ(
-            model, n_samples=20, noise_model="gaussian", noise_scale=0.01
-        )
+        uq = MonteCarloUQ(model, n_samples=20, noise_model="gaussian", noise_scale=0.01)
         x0 = np.array([1.0, 0.0])
         result = uq.predict_with_uncertainty(x0, t=dt)
         assert result["samples"].shape[0] == 20
@@ -126,9 +125,7 @@ class TestMonteCarloUQ:
     def test_uniform_noise_model(self, rotation_model):
         """Uniform noise model should work without errors."""
         model, dt = rotation_model
-        uq = MonteCarloUQ(
-            model, n_samples=20, noise_model="uniform", noise_scale=0.01
-        )
+        uq = MonteCarloUQ(model, n_samples=20, noise_model="uniform", noise_scale=0.01)
         x0 = np.array([1.0, 0.0])
         result = uq.predict_with_uncertainty(x0, t=dt)
         assert result["samples"].shape[0] == 20

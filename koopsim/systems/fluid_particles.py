@@ -34,7 +34,7 @@ class HopfBifurcation(DynamicalSystem):
 
     def rhs(self, t: float, state: np.ndarray) -> np.ndarray:
         x, y = state
-        r2 = x ** 2 + y ** 2
+        r2 = x**2 + y**2
         dx = self._mu * x - y - x * r2
         dy = x + self._mu * y - y * r2
         return np.array([dx, dy])
@@ -63,14 +63,10 @@ class PointVortexSystem(DynamicalSystem):
         ``+1`` / ``-1`` strengths are used.
     """
 
-    def __init__(
-        self, n_vortices: int = 3, strengths: np.ndarray | None = None
-    ) -> None:
+    def __init__(self, n_vortices: int = 3, strengths: np.ndarray | None = None) -> None:
         self._n_vortices = n_vortices
         if strengths is None:
-            self._strengths = np.array(
-                [(-1.0) ** i for i in range(n_vortices)]
-            )
+            self._strengths = np.array([(-1.0) ** i for i in range(n_vortices)])
         else:
             self._strengths = np.asarray(strengths, dtype=np.float64)
             if len(self._strengths) != n_vortices:
@@ -91,7 +87,7 @@ class PointVortexSystem(DynamicalSystem):
                     continue
                 dx = pos[i, 0] - pos[j, 0]
                 dy = pos[i, 1] - pos[j, 1]
-                r2 = dx ** 2 + dy ** 2
+                r2 = dx**2 + dy**2
                 # Regularise to avoid singularity
                 r2 = max(r2, 1e-10)
                 # Biot-Savart: velocity induced by vortex j on vortex i

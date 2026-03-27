@@ -2,10 +2,10 @@
 
 Run with: streamlit run koopsim/dashboard.py
 """
+
 from __future__ import annotations
 
 import logging
-import tempfile
 
 import numpy as np
 import streamlit as st
@@ -98,9 +98,7 @@ def _get_system_instance(key: str):
 # Tab definitions
 # ===================================================================
 
-tab_data, tab_train, tab_predict, tab_analysis = st.tabs(
-    ["Data", "Train", "Predict", "Analysis"]
-)
+tab_data, tab_train, tab_predict, tab_analysis = st.tabs(["Data", "Train", "Predict", "Analysis"])
 
 # -------------------------------------------------------------------
 # Tab 1: Data
@@ -132,10 +130,12 @@ with tab_data:
                 with st.spinner("Loading file..."):
                     if uploaded.name.endswith(".csv"):
                         import io
+
                         content = uploaded.read().decode("utf-8")
                         data = np.loadtxt(io.StringIO(content), delimiter=",")
                     else:
                         import io as _io
+
                         data = np.load(_io.BytesIO(uploaded.read()))
 
                     if data.ndim != 2 or data.shape[0] < 2:
@@ -171,23 +171,39 @@ with tab_data:
         col1, col2, col3, col4 = st.columns(4)
         with col1:
             gen_dt = st.slider(
-                "dt", min_value=0.001, max_value=0.1, value=0.01, step=0.001,
+                "dt",
+                min_value=0.001,
+                max_value=0.1,
+                value=0.01,
+                step=0.001,
                 key="gen_dt",
             )
         with col2:
             gen_n_steps = st.slider(
-                "n_steps", min_value=50, max_value=500, value=100, step=10,
+                "n_steps",
+                min_value=50,
+                max_value=500,
+                value=100,
+                step=10,
                 key="gen_n_steps",
             )
         with col3:
             gen_n_traj = st.slider(
-                "n_trajectories", min_value=1, max_value=50, value=10, step=1,
+                "n_trajectories",
+                min_value=1,
+                max_value=50,
+                value=10,
+                step=1,
                 key="gen_n_traj",
             )
         with col4:
             gen_noise = st.slider(
-                "noise_std", min_value=0.0, max_value=0.1, value=0.0,
-                step=0.001, key="gen_noise",
+                "noise_std",
+                min_value=0.0,
+                max_value=0.1,
+                value=0.0,
+                step=0.001,
+                key="gen_noise",
             )
 
         if st.button("Generate snapshots", key="btn_generate"):
@@ -270,13 +286,21 @@ with tab_train:
             with col_e1:
                 use_poly = st.checkbox("Polynomial dictionary", value=False, key="use_poly")
                 poly_degree = st.slider(
-                    "poly_degree", min_value=2, max_value=5, value=3,
-                    key="poly_degree", disabled=not use_poly,
+                    "poly_degree",
+                    min_value=2,
+                    max_value=5,
+                    value=3,
+                    key="poly_degree",
+                    disabled=not use_poly,
                 )
                 use_rbf = st.checkbox("RBF dictionary", value=False, key="use_rbf")
                 rbf_centers = st.slider(
-                    "rbf_centers", min_value=10, max_value=100, value=50,
-                    key="rbf_centers", disabled=not use_rbf,
+                    "rbf_centers",
+                    min_value=10,
+                    max_value=100,
+                    value=50,
+                    key="rbf_centers",
+                    disabled=not use_rbf,
                 )
             with col_e2:
                 reg = st.slider(
@@ -287,7 +311,7 @@ with tab_train:
                     step=0.5,
                     key="edmd_reg",
                 )
-                regularization = 10.0 ** reg
+                regularization = 10.0**reg
                 st.text(f"regularization = {regularization:.2e}")
 
                 use_svd = st.checkbox("SVD rank truncation", value=False, key="use_svd")
@@ -306,11 +330,17 @@ with tab_train:
             col_n1, col_n2 = st.columns(2)
             with col_n1:
                 latent_dim = st.slider(
-                    "latent_dim", min_value=4, max_value=64, value=16,
+                    "latent_dim",
+                    min_value=4,
+                    max_value=64,
+                    value=16,
                     key="latent_dim",
                 )
                 max_epochs = st.slider(
-                    "max_epochs", min_value=10, max_value=500, value=100,
+                    "max_epochs",
+                    min_value=10,
+                    max_value=500,
+                    value=100,
                     key="max_epochs",
                 )
             with col_n2:
@@ -322,7 +352,7 @@ with tab_train:
                     step=0.5,
                     key="neural_lr",
                 )
-                lr = 10.0 ** lr_log
+                lr = 10.0**lr_log
                 st.text(f"lr = {lr:.2e}")
 
         if st.button("Train model", key="btn_train"):
@@ -408,7 +438,8 @@ with tab_predict:
         dt = st.session_state["dt"]
 
         # Default initial state from training data
-        default_x0 = st.session_state["X"][0] if st.session_state["X"] is not None else np.zeros(n_state)
+        X_data = st.session_state["X"]
+        default_x0 = X_data[0] if X_data is not None else np.zeros(n_state)
         default_str = ", ".join(f"{v:.6g}" for v in default_x0)
 
         st.subheader("Initial state")
@@ -456,17 +487,26 @@ with tab_predict:
             col_t1, col_t2, col_t3 = st.columns(3)
             with col_t1:
                 t_start = st.number_input(
-                    "t_start", min_value=0.0, value=0.0,
-                    format="%.4f", key="t_start",
+                    "t_start",
+                    min_value=0.0,
+                    value=0.0,
+                    format="%.4f",
+                    key="t_start",
                 )
             with col_t2:
                 t_end = st.number_input(
-                    "t_end", min_value=0.0, value=float(dt * 100),
-                    format="%.4f", key="t_end",
+                    "t_end",
+                    min_value=0.0,
+                    value=float(dt * 100),
+                    format="%.4f",
+                    key="t_end",
                 )
             with col_t3:
                 n_points = st.slider(
-                    "n_points", min_value=10, max_value=1000, value=200,
+                    "n_points",
+                    min_value=10,
+                    max_value=1000,
+                    value=200,
                     key="n_points",
                 )
 
@@ -485,18 +525,19 @@ with tab_predict:
                         )
 
                         # Plot with visualization utilities
-                        from koopsim.utils.visualization import (
-                            plot_phase_portrait,
-                            plot_trajectory_comparison,
-                        )
-
                         # Time-series plot (predicted only)
                         import matplotlib
+
+                        from koopsim.utils.visualization import (
+                            plot_phase_portrait,
+                        )
+
                         matplotlib.use("Agg")
                         import matplotlib.pyplot as plt
 
                         fig_ts, axes = plt.subplots(
-                            n_state, 1,
+                            n_state,
+                            1,
                             figsize=(10, max(3 * n_state, 4)),
                             squeeze=False,
                         )
@@ -514,7 +555,9 @@ with tab_predict:
                         # Phase portrait (if 2+ dims)
                         if n_state >= 2:
                             fig_pp = plot_phase_portrait(
-                                traj, dims=(0, 1), backend="matplotlib",
+                                traj,
+                                dims=(0, 1),
+                                backend="matplotlib",
                             )
                             st.pyplot(fig_pp)
                             plt.close(fig_pp)
@@ -537,9 +580,10 @@ with tab_analysis:
         # --- Eigenspectrum ---
         st.subheader("Eigenspectrum")
         try:
+            import matplotlib
+
             from koopsim.utils.visualization import plot_eigenspectrum
 
-            import matplotlib
             matplotlib.use("Agg")
             import matplotlib.pyplot as plt
 
@@ -561,13 +605,15 @@ with tab_analysis:
             rows = []
             for idx in order:
                 ev = spec["eigenvalues"][idx]
-                rows.append({
-                    "Mode": int(idx),
-                    "Eigenvalue": f"{ev.real:.6f} + {ev.imag:.6f}j",
-                    "|lambda|": f"{abs(ev):.6f}",
-                    "Frequency (rad/s)": f"{spec['frequencies'][idx]:.6f}",
-                    "Growth rate": f"{spec['growth_rates'][idx]:.6f}",
-                })
+                rows.append(
+                    {
+                        "Mode": int(idx),
+                        "Eigenvalue": f"{ev.real:.6f} + {ev.imag:.6f}j",
+                        "|lambda|": f"{abs(ev):.6f}",
+                        "Frequency (rad/s)": f"{spec['frequencies'][idx]:.6f}",
+                        "Growth rate": f"{spec['growth_rates'][idx]:.6f}",
+                    }
+                )
             spec_df = pd.DataFrame(rows)
             st.dataframe(spec_df, use_container_width=True, hide_index=True)
         except Exception as exc:
@@ -578,16 +624,22 @@ with tab_analysis:
         col_u1, col_u2 = st.columns(2)
         with col_u1:
             uq_n_samples = st.slider(
-                "n_samples (MC)", min_value=10, max_value=500, value=100,
+                "n_samples (MC)",
+                min_value=10,
+                max_value=500,
+                value=100,
                 key="uq_n_samples",
             )
         with col_u2:
             uq_noise_log = st.slider(
                 "noise_scale (log10)",
-                min_value=-4.0, max_value=-1.0, value=-2.0, step=0.5,
+                min_value=-4.0,
+                max_value=-1.0,
+                value=-2.0,
+                step=0.5,
                 key="uq_noise_scale",
             )
-            uq_noise_scale = 10.0 ** uq_noise_log
+            uq_noise_scale = 10.0**uq_noise_log
             st.text(f"noise_scale = {uq_noise_scale:.2e}")
 
         uq_t = st.number_input(
@@ -604,7 +656,8 @@ with tab_analysis:
                     X = st.session_state["X"]
                     x0 = X[0] if X is not None else np.zeros(sim.model.n_state_dims)
                     uq_result = sim.predict_with_uncertainty(
-                        x0, uq_t,
+                        x0,
+                        uq_t,
                         n_samples=uq_n_samples,
                         noise_scale=uq_noise_scale,
                     )
@@ -613,9 +666,10 @@ with tab_analysis:
                 st.markdown(f"**Std deviation:** `{uq_result['std']}`")
 
                 # Plot uncertainty band over a range of times
+                import matplotlib
+
                 from koopsim.utils.visualization import plot_uncertainty_band
 
-                import matplotlib
                 matplotlib.use("Agg")
                 import matplotlib.pyplot as plt
 
@@ -630,7 +684,8 @@ with tab_analysis:
 
                 for i, t_val in enumerate(uq_times):
                     res = sim.predict_with_uncertainty(
-                        x0, t_val,
+                        x0,
+                        t_val,
                         n_samples=max(uq_n_samples // 5, 10),
                         noise_scale=uq_noise_scale,
                     )
@@ -638,7 +693,10 @@ with tab_analysis:
                     stds[i] = res["std"]
 
                 fig_uq = plot_uncertainty_band(
-                    uq_times, means, stds, backend="matplotlib",
+                    uq_times,
+                    means,
+                    stds,
+                    backend="matplotlib",
                 )
                 st.pyplot(fig_uq)
                 plt.close(fig_uq)
@@ -651,16 +709,19 @@ with tab_analysis:
         if st.session_state["X"] is not None:
             err_n_steps = st.slider(
                 "Number of prediction steps",
-                min_value=5, max_value=200, value=50,
+                min_value=5,
+                max_value=200,
+                value=50,
                 key="err_n_steps",
             )
             if st.button("Compute multi-step error", key="btn_error"):
                 try:
                     with st.spinner("Computing multi-step error..."):
+                        import matplotlib
+
                         from koopsim.core.validation import ModelValidator
                         from koopsim.utils.visualization import plot_prediction_error
 
-                        import matplotlib
                         matplotlib.use("Agg")
                         import matplotlib.pyplot as plt
 
@@ -678,12 +739,17 @@ with tab_analysis:
                             st.error("Not enough data for multi-step error.")
                         else:
                             errors = ModelValidator.multi_step_error(
-                                sim.model, trajectory, dt_val, actual_steps,
+                                sim.model,
+                                trajectory,
+                                dt_val,
+                                actual_steps,
                             )
                             steps = np.arange(1, actual_steps + 1)
 
                             fig_err = plot_prediction_error(
-                                steps, errors, backend="matplotlib",
+                                steps,
+                                errors,
+                                backend="matplotlib",
                             )
                             st.pyplot(fig_err)
                             plt.close(fig_err)

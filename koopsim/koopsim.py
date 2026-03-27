@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from koopsim.core.auto_tune import AutoTuneResult, auto_tune
 from koopsim.core.base import KoopmanModel
 from koopsim.core.edmd import EDMD
 from koopsim.core.exceptions import KoopSimError, NotFittedError
@@ -153,9 +154,7 @@ class KoopSim:
                 batch_size=self._batch_size,
             )
         else:
-            raise KoopSimError(
-                f"Unknown method '{self.method}'. Choose 'edmd' or 'neural'."
-            )
+            raise KoopSimError(f"Unknown method '{self.method}'. Choose 'edmd' or 'neural'.")
 
     # ------------------------------------------------------------------
     # Public API
@@ -191,6 +190,70 @@ class KoopSim:
             )
         return self
 
+    def fit_auto(
+        self,
+        X: np.ndarray,
+        Y: np.ndarray,
+        dt: float,
+        *,
+        poly_degrees: list[int] | None = None,
+        rbf_centers_list: list[int] | None = None,
+        regularizations: list[float] | None = None,
+        n_folds: int = 5,
+        metric: str = "rmse",
+    ) -> AutoTuneResult:
+        """Auto-select hyperparameters via cross-validation, then fit.
+
+        Evaluates combinations of dictionary type/complexity and
+        regularization using k-fold CV, selects the best, and fits
+        the final model on all data.
+
+        Parameters
+        ----------
+        X : np.ndarray, shape (n_samples, n_features)
+            Pre-snapshot data.
+        Y : np.ndarray, shape (n_samples, n_features)
+            Post-snapshot data.
+        dt : float
+            Time step between snapshot pairs.
+        poly_degrees : list[int] or None
+            Polynomial degrees to try. Default: [2, 3, 4].
+        rbf_centers_list : list[int] or None
+            RBF center counts to try. Default: [10, 25, 50].
+        regularizations : list[float] or None
+            Regularization values to try. Default: [1e-8, 1e-6, 1e-4, 1e-2].
+        n_folds : int
+            Number of CV folds.
+        metric : str
+            Error metric for CV: 'rmse', 'mae', or 'relative'.
+
+        Returns
+        -------
+        AutoTuneResult
+            The best hyperparameters and all CV results.
+        """
+        result = auto_tune(
+            X,
+            Y,
+            dt,
+            poly_degrees=poly_degrees,
+            rbf_centers_list=rbf_centers_list,
+            regularizations=regularizations,
+            n_folds=n_folds,
+            metric=metric,
+            verbose=self.verbose,
+        )
+
+        # Apply best hyperparameters and refit on all data
+        self._poly_degree = result.poly_degree
+        self._rbf_centers = result.rbf_centers
+        self._regularization = result.regularization
+        self.method = "edmd"
+        self._build_model()
+        self.fit(X, Y, dt)
+
+        return result
+
     def predict(self, x0: np.ndarray, t: float | np.ndarray) -> np.ndarray:
         """Predict state at time *t* (scalar or array).
 
@@ -215,9 +278,7 @@ class KoopSim:
             raise NotFittedError("Call fit() before predict().")
         return self._engine.predict(x0, t)
 
-    def predict_trajectory(
-        self, x0: np.ndarray, times: np.ndarray
-    ) -> np.ndarray:
+    def predict_trajectory(self, x0: np.ndarray, times: np.ndarray) -> np.ndarray:
         """Predict trajectory at specified times.
 
         Parameters
@@ -301,9 +362,7 @@ class KoopSim:
         """
         if self._model is None or not self._model._is_fitted():
             raise NotFittedError("Call fit() before validate().")
-        return ModelValidator.prediction_error(
-            self._model, X_test, Y_test, metric=metric
-        )
+        return ModelValidator.prediction_error(self._model, X_test, Y_test, metric=metric)
 
     def spectral_analysis(self) -> dict:
         """Analyse eigenvalues of the Koopman matrix.
@@ -410,9 +469,7 @@ class KoopSim:
         if x0 is None:
             rng = np.random.default_rng(42)
             x0 = rng.standard_normal(system.state_dim) * 0.5
-        X, Y = system.generate_snapshots(
-            x0, dt, n_steps, n_trajectories, noise_std
-        )
+        X, Y = system.generate_snapshots(x0, dt, n_steps, n_trajectories, noise_std)
         instance = cls(**kwargs)
         instance.fit(X, Y, dt)
         return instance
@@ -429,11 +486,7 @@ class KoopSim:
         return self._model
 
     def __repr__(self) -> str:
-        fitted = (
-            self._model._is_fitted()
-            if self._model is not None
-            else False
-        )
+        fitted = self._model._is_fitted() if self._model is not None else False
         return (
             f"KoopSim(method={self.method!r}, fitted={fitted}, "
             f"prediction_method={self.prediction_method!r})"

@@ -13,7 +13,6 @@ from koopsim.utils.dictionary import (
     PolynomialDictionary,
 )
 
-
 # -------------------------------------------------------------------------
 # 1. Perfect recovery on 2D rotation with IdentityDictionary
 # -------------------------------------------------------------------------
@@ -27,10 +26,12 @@ class TestLinearRotation:
     def test_perfect_recovery(self, simple_linear_system):
         """K should match R.T to near machine precision."""
         X, Y, dt, theta = simple_linear_system
-        R = np.array([
-            [np.cos(theta), -np.sin(theta)],
-            [np.sin(theta), np.cos(theta)],
-        ])
+        R = np.array(
+            [
+                [np.cos(theta), -np.sin(theta)],
+                [np.sin(theta), np.cos(theta)],
+            ]
+        )
 
         model = EDMD(dictionary=IdentityDictionary(), regularization=1e-15)
         model.fit(X, Y, dt)
@@ -69,7 +70,7 @@ def _duffing_step(X: np.ndarray) -> np.ndarray:
     """Simple nonlinear map: x_next = [x1 + 0.1*x2, x2 - 0.1*x1 + 0.05*x1^3]."""
     x1, x2 = X[:, 0], X[:, 1]
     y1 = x1 + 0.1 * x2
-    y2 = x2 - 0.1 * x1 + 0.05 * x1 ** 3
+    y2 = x2 - 0.1 * x1 + 0.05 * x1**3
     return np.column_stack([y1, y2])
 
 
@@ -145,10 +146,12 @@ class TestRegularization:
         # Simple 2D rotation
         theta = np.pi / 6
         dt = 0.1
-        R = np.array([
-            [np.cos(theta), -np.sin(theta)],
-            [np.sin(theta), np.cos(theta)],
-        ])
+        R = np.array(
+            [
+                [np.cos(theta), -np.sin(theta)],
+                [np.sin(theta), np.cos(theta)],
+            ]
+        )
 
         # Small training set with heavy noise -> overfitting regime
         n_train = 30
@@ -207,10 +210,12 @@ class TestSVDTruncation:
 
         # True dynamics in 2D
         theta = np.pi / 4
-        R = np.array([
-            [np.cos(theta), -np.sin(theta)],
-            [np.sin(theta), np.cos(theta)],
-        ])
+        R = np.array(
+            [
+                [np.cos(theta), -np.sin(theta)],
+                [np.sin(theta), np.cos(theta)],
+            ]
+        )
         X_2d = rng.standard_normal((n_samples, 2))
         Y_2d = X_2d @ R.T
 
@@ -232,9 +237,7 @@ class TestSVDTruncation:
         model_full.fit(X_5d_noisy, Y_5d_noisy, dt)
 
         # With rank-2 truncation — focuses on the two meaningful directions
-        model_trunc = EDMD(
-            dictionary=IdentityDictionary(), regularization=1e-12, svd_rank=2
-        )
+        model_trunc = EDMD(dictionary=IdentityDictionary(), regularization=1e-12, svd_rank=2)
         model_trunc.fit(X_5d_noisy, Y_5d_noisy, dt)
 
         # Evaluate on a large clean test set
@@ -254,16 +257,13 @@ class TestSVDTruncation:
 
         # Truncated model should generalize better on the meaningful subspace
         assert error_trunc <= error_full * 1.05, (
-            f"Truncated model much worse: full={error_full:.4f}, "
-            f"trunc={error_trunc:.4f}"
+            f"Truncated model much worse: full={error_full:.4f}, trunc={error_trunc:.4f}"
         )
 
     def test_svd_rank_sets_correctly(self, simple_linear_system):
         """svd_rank parameter should be used during fitting."""
         X, Y, dt, _ = simple_linear_system
-        model = EDMD(
-            dictionary=IdentityDictionary(), regularization=1e-15, svd_rank=1
-        )
+        model = EDMD(dictionary=IdentityDictionary(), regularization=1e-15, svd_rank=1)
         model.fit(X, Y, dt)
         K = model.get_koopman_matrix()
         # With rank-1 truncation on a 2D system, K should be rank 1

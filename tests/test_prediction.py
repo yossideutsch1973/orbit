@@ -11,7 +11,6 @@ from koopsim.core.exceptions import NotFittedError
 from koopsim.core.prediction import PredictionEngine
 from koopsim.utils.dictionary import IdentityDictionary
 
-
 # -------------------------------------------------------------------------
 # Helpers
 # -------------------------------------------------------------------------

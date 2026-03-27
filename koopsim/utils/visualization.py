@@ -20,13 +20,14 @@ def _get_matplotlib():
     """Lazily import matplotlib with non-interactive backend."""
     try:
         import matplotlib
+
         matplotlib.use("Agg")  # non-interactive backend for safety
         import matplotlib.pyplot as plt
+
         return plt
     except ImportError:
         raise ImportError(
-            "matplotlib is required for visualization. "
-            "Install with: pip install koopsim[viz]"
+            "matplotlib is required for visualization. Install with: pip install koopsim[viz]"
         )
 
 
@@ -34,11 +35,11 @@ def _get_plotly():
     """Lazily import plotly graph_objects."""
     try:
         import plotly.graph_objects as go
+
         return go
     except ImportError:
         raise ImportError(
-            "plotly is required for visualization. "
-            "Install with: pip install koopsim[viz]"
+            "plotly is required for visualization. Install with: pip install koopsim[viz]"
         )
 
 
@@ -85,16 +86,24 @@ def plot_trajectory_comparison(
         go = _get_plotly()
         fig = go.Figure()
         for i in range(n_dims):
-            fig.add_trace(go.Scatter(
-                x=times, y=true[:, i],
-                mode="lines", name=f"{labels[i]} (true)",
-                line=dict(dash="solid"),
-            ))
-            fig.add_trace(go.Scatter(
-                x=times, y=predicted[:, i],
-                mode="lines", name=f"{labels[i]} (predicted)",
-                line=dict(dash="dash"),
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=times,
+                    y=true[:, i],
+                    mode="lines",
+                    name=f"{labels[i]} (true)",
+                    line=dict(dash="solid"),
+                )
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=times,
+                    y=predicted[:, i],
+                    mode="lines",
+                    name=f"{labels[i]} (predicted)",
+                    line=dict(dash="dash"),
+                )
+            )
         fig.update_layout(
             title="Trajectory Comparison",
             xaxis_title="Time",
@@ -148,16 +157,24 @@ def plot_phase_portrait(
         fig = go.Figure()
         for idx, traj in enumerate(trajectories):
             traj = np.asarray(traj)
-            fig.add_trace(go.Scatter(
-                x=traj[:, d0], y=traj[:, d1],
-                mode="lines", name=f"Trajectory {idx}",
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=traj[:, d0],
+                    y=traj[:, d1],
+                    mode="lines",
+                    name=f"Trajectory {idx}",
+                )
+            )
             # Mark start
-            fig.add_trace(go.Scatter(
-                x=[traj[0, d0]], y=[traj[0, d1]],
-                mode="markers", marker=dict(size=8, symbol="circle"),
-                showlegend=False,
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=[traj[0, d0]],
+                    y=[traj[0, d1]],
+                    mode="markers",
+                    marker=dict(size=8, symbol="circle"),
+                    showlegend=False,
+                )
+            )
         fig.update_layout(
             title="Phase Portrait",
             xaxis_title=f"Dim {d0}",
@@ -212,22 +229,30 @@ def plot_eigenspectrum(
         go = _get_plotly()
         fig = go.Figure()
         # Unit circle
-        fig.add_trace(go.Scatter(
-            x=circle_x, y=circle_y,
-            mode="lines", name="Unit circle",
-            line=dict(color="gray", dash="dash"),
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=circle_x,
+                y=circle_y,
+                mode="lines",
+                name="Unit circle",
+                line=dict(color="gray", dash="dash"),
+            )
+        )
         # Eigenvalues colored by magnitude
-        fig.add_trace(go.Scatter(
-            x=eigenvalues.real, y=eigenvalues.imag,
-            mode="markers", name="Eigenvalues",
-            marker=dict(
-                size=8,
-                color=magnitudes,
-                colorscale="RdYlBu_r",
-                colorbar=dict(title="|λ|"),
-            ),
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=eigenvalues.real,
+                y=eigenvalues.imag,
+                mode="markers",
+                name="Eigenvalues",
+                marker=dict(
+                    size=8,
+                    color=magnitudes,
+                    colorscale="RdYlBu_r",
+                    colorbar=dict(title="|λ|"),
+                ),
+            )
+        )
         fig.update_layout(
             title="Koopman Eigenspectrum",
             xaxis_title="Re(λ)",
@@ -241,8 +266,13 @@ def plot_eigenspectrum(
     fig, ax = plt.subplots(figsize=(8, 8))
     ax.plot(circle_x, circle_y, "k--", alpha=0.4, label="Unit circle")
     scatter = ax.scatter(
-        eigenvalues.real, eigenvalues.imag,
-        c=magnitudes, cmap="RdYlBu_r", s=50, edgecolors="k", linewidths=0.5,
+        eigenvalues.real,
+        eigenvalues.imag,
+        c=magnitudes,
+        cmap="RdYlBu_r",
+        s=50,
+        edgecolors="k",
+        linewidths=0.5,
         zorder=5,
     )
     fig.colorbar(scatter, ax=ax, label="|λ|")
@@ -291,17 +321,25 @@ def plot_particle_field(
             trails = np.asarray(trails)
             n_particles = trails.shape[1]
             for p in range(n_particles):
-                fig.add_trace(go.Scatter(
-                    x=trails[:, p, 0], y=trails[:, p, 1],
-                    mode="lines", line=dict(width=1, color="lightgray"),
-                    showlegend=False,
-                ))
+                fig.add_trace(
+                    go.Scatter(
+                        x=trails[:, p, 0],
+                        y=trails[:, p, 1],
+                        mode="lines",
+                        line=dict(width=1, color="lightgray"),
+                        showlegend=False,
+                    )
+                )
         # Positions
-        fig.add_trace(go.Scatter(
-            x=positions[:, 0], y=positions[:, 1],
-            mode="markers", name="Particles",
-            marker=dict(size=6),
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=positions[:, 0],
+                y=positions[:, 1],
+                mode="markers",
+                name="Particles",
+                marker=dict(size=6),
+            )
+        )
         fig.update_layout(
             title="Particle Field",
             xaxis_title="x",
@@ -319,21 +357,33 @@ def plot_particle_field(
         n_particles = trails.shape[1]
         for p in range(n_particles):
             ax.plot(
-                trails[:, p, 0], trails[:, p, 1],
-                color="lightgray", linewidth=0.8, zorder=1,
+                trails[:, p, 0],
+                trails[:, p, 1],
+                color="lightgray",
+                linewidth=0.8,
+                zorder=1,
             )
     # Positions
     ax.scatter(
-        positions[:, 0], positions[:, 1],
-        s=20, zorder=3, label="Particles",
+        positions[:, 0],
+        positions[:, 1],
+        s=20,
+        zorder=3,
+        label="Particles",
     )
     # Velocity arrows
     if velocities is not None:
         velocities = np.asarray(velocities)
         ax.quiver(
-            positions[:, 0], positions[:, 1],
-            velocities[:, 0], velocities[:, 1],
-            angles="xy", scale_units="xy", scale=1, alpha=0.6, zorder=2,
+            positions[:, 0],
+            positions[:, 1],
+            velocities[:, 0],
+            velocities[:, 1],
+            angles="xy",
+            scale_units="xy",
+            scale=1,
+            alpha=0.6,
+            zorder=2,
         )
     ax.set_xlabel("x")
     ax.set_ylabel("y")
@@ -383,25 +433,33 @@ def plot_vector_field(
         yf = grid_y.ravel()
         uf = u.ravel()
         vf = v.ravel()
-        magnitude = np.sqrt(uf ** 2 + vf ** 2)
+        magnitude = np.sqrt(uf**2 + vf**2)
         fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=xf, y=yf,
-            mode="markers",
-            marker=dict(size=3, color=magnitude, colorscale="Viridis",
-                        colorbar=dict(title="Magnitude")),
-            name="Grid points",
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=xf,
+                y=yf,
+                mode="markers",
+                marker=dict(
+                    size=3, color=magnitude, colorscale="Viridis", colorbar=dict(title="Magnitude")
+                ),
+                name="Grid points",
+            )
+        )
         # Approximate quiver with line segments
         scale = 0.3 * (np.max(xf) - np.min(xf)) / max(np.max(magnitude), 1e-15)
         x_end = xf + uf * scale
         y_end = yf + vf * scale
         for i in range(len(xf)):
-            fig.add_trace(go.Scatter(
-                x=[xf[i], x_end[i]], y=[yf[i], y_end[i]],
-                mode="lines", line=dict(color="steelblue", width=1),
-                showlegend=False,
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=[xf[i], x_end[i]],
+                    y=[yf[i], y_end[i]],
+                    mode="lines",
+                    line=dict(color="steelblue", width=1),
+                    showlegend=False,
+                )
+            )
         fig.update_layout(
             title="Vector Field",
             xaxis_title="x",
@@ -413,7 +471,7 @@ def plot_vector_field(
     # matplotlib
     plt = _get_matplotlib()
     fig, ax = plt.subplots(figsize=(8, 8))
-    magnitude = np.sqrt(u ** 2 + v ** 2)
+    magnitude = np.sqrt(u**2 + v**2)
     q = ax.quiver(grid_x, grid_y, u, v, magnitude, cmap="viridis", alpha=0.8)
     fig.colorbar(q, ax=ax, label="Magnitude")
     ax.set_xlabel("x")
@@ -451,10 +509,14 @@ def plot_prediction_error(
     if backend == "plotly":
         go = _get_plotly()
         fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=steps, y=errors,
-            mode="lines+markers", name="Error",
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=steps,
+                y=errors,
+                mode="lines+markers",
+                name="Error",
+            )
+        )
         fig.update_layout(
             title="Prediction Error",
             xaxis_title="Steps",
@@ -520,39 +582,53 @@ def plot_uncertainty_band(
     if backend == "plotly":
         go = _get_plotly()
         fig = go.Figure()
-        colors = ["blue", "red", "green", "orange", "purple"]
         for i in range(n_dims):
-            color = colors[i % len(colors)]
             # 2-sigma band
-            fig.add_trace(go.Scatter(
-                x=np.concatenate([times, times[::-1]]),
-                y=np.concatenate([mean[:, i] + 2 * std[:, i],
-                                  (mean[:, i] - 2 * std[:, i])[::-1]]),
-                fill="toself", fillcolor=f"rgba(0,100,200,0.1)",
-                line=dict(color="rgba(255,255,255,0)"),
-                showlegend=False, name=f"dim {i} ±2σ",
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=np.concatenate([times, times[::-1]]),
+                    y=np.concatenate(
+                        [mean[:, i] + 2 * std[:, i], (mean[:, i] - 2 * std[:, i])[::-1]]
+                    ),
+                    fill="toself",
+                    fillcolor="rgba(0,100,200,0.1)",
+                    line=dict(color="rgba(255,255,255,0)"),
+                    showlegend=False,
+                    name=f"dim {i} ±2σ",
+                )
+            )
             # 1-sigma band
-            fig.add_trace(go.Scatter(
-                x=np.concatenate([times, times[::-1]]),
-                y=np.concatenate([mean[:, i] + std[:, i],
-                                  (mean[:, i] - std[:, i])[::-1]]),
-                fill="toself", fillcolor=f"rgba(0,100,200,0.2)",
-                line=dict(color="rgba(255,255,255,0)"),
-                showlegend=False, name=f"dim {i} ±1σ",
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=np.concatenate([times, times[::-1]]),
+                    y=np.concatenate([mean[:, i] + std[:, i], (mean[:, i] - std[:, i])[::-1]]),
+                    fill="toself",
+                    fillcolor="rgba(0,100,200,0.2)",
+                    line=dict(color="rgba(255,255,255,0)"),
+                    showlegend=False,
+                    name=f"dim {i} ±1σ",
+                )
+            )
             # Mean
-            fig.add_trace(go.Scatter(
-                x=times, y=mean[:, i],
-                mode="lines", name=f"dim {i} (mean)",
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=times,
+                    y=mean[:, i],
+                    mode="lines",
+                    name=f"dim {i} (mean)",
+                )
+            )
             # True
             if true is not None:
-                fig.add_trace(go.Scatter(
-                    x=times, y=true[:, i],
-                    mode="lines", name=f"dim {i} (true)",
-                    line=dict(dash="dash"),
-                ))
+                fig.add_trace(
+                    go.Scatter(
+                        x=times,
+                        y=true[:, i],
+                        mode="lines",
+                        name=f"dim {i} (true)",
+                        line=dict(dash="dash"),
+                    )
+                )
         fig.update_layout(
             title="Prediction with Uncertainty",
             xaxis_title="Time",
@@ -566,12 +642,20 @@ def plot_uncertainty_band(
     for i in range(n_dims):
         ax = axes[i, 0]
         ax.fill_between(
-            times, mean[:, i] - 2 * std[:, i], mean[:, i] + 2 * std[:, i],
-            alpha=0.15, color="steelblue", label="±2σ",
+            times,
+            mean[:, i] - 2 * std[:, i],
+            mean[:, i] + 2 * std[:, i],
+            alpha=0.15,
+            color="steelblue",
+            label="±2σ",
         )
         ax.fill_between(
-            times, mean[:, i] - std[:, i], mean[:, i] + std[:, i],
-            alpha=0.3, color="steelblue", label="±1σ",
+            times,
+            mean[:, i] - std[:, i],
+            mean[:, i] + std[:, i],
+            alpha=0.3,
+            color="steelblue",
+            label="±1σ",
         )
         ax.plot(times, mean[:, i], linewidth=1.5, color="steelblue", label="Mean")
         if true is not None:
@@ -619,8 +703,7 @@ def animate_trajectory(
             import imageio
         except ImportError:
             raise ImportError(
-                "imageio is required for animation. "
-                "Install with: pip install imageio"
+                "imageio is required for animation. Install with: pip install imageio"
             )
 
     plt = _get_matplotlib()
@@ -647,13 +730,20 @@ def animate_trajectory(
         # Trail up to current frame
         trail_end = frame_idx + 1
         ax.plot(
-            trajectory[:trail_end, d0], trajectory[:trail_end, d1],
-            color="steelblue", linewidth=1, alpha=0.6,
+            trajectory[:trail_end, d0],
+            trajectory[:trail_end, d1],
+            color="steelblue",
+            linewidth=1,
+            alpha=0.6,
         )
         # Current position
         ax.plot(
-            trajectory[frame_idx, d0], trajectory[frame_idx, d1],
-            "o", color="red", markersize=8, zorder=5,
+            trajectory[frame_idx, d0],
+            trajectory[frame_idx, d1],
+            "o",
+            color="red",
+            markersize=8,
+            zorder=5,
         )
         ax.set_xlim(x_min - x_pad, x_max + x_pad)
         ax.set_ylim(y_min - y_pad, y_max + y_pad)

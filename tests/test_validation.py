@@ -8,11 +8,8 @@ import pytest
 from koopsim.core.edmd import EDMD
 from koopsim.core.validation import ModelValidator
 from koopsim.utils.dictionary import (
-    CompositeDictionary,
     IdentityDictionary,
-    PolynomialDictionary,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -33,10 +30,12 @@ def _rotation_trajectory(theta, n_steps, x0, dt):
 
     Returns array of shape (n_steps + 1, 2) starting from x0.
     """
-    R = np.array([
-        [np.cos(theta), -np.sin(theta)],
-        [np.sin(theta), np.cos(theta)],
-    ])
+    R = np.array(
+        [
+            [np.cos(theta), -np.sin(theta)],
+            [np.sin(theta), np.cos(theta)],
+        ]
+    )
     traj = np.empty((n_steps + 1, 2))
     traj[0] = x0
     for i in range(n_steps):
@@ -80,10 +79,12 @@ class TestPredictionError:
         """A model fitted on noisy data should have positive error on clean data."""
         theta = np.pi / 6
         dt = 0.1
-        R = np.array([
-            [np.cos(theta), -np.sin(theta)],
-            [np.sin(theta), np.cos(theta)],
-        ])
+        R = np.array(
+            [
+                [np.cos(theta), -np.sin(theta)],
+                [np.sin(theta), np.cos(theta)],
+            ]
+        )
         X = rng.standard_normal((100, 2))
         Y_clean = X @ R.T
         Y_noisy = Y_clean + rng.normal(0, 0.5, Y_clean.shape)

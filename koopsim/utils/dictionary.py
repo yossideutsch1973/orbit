@@ -99,9 +99,7 @@ class IdentityDictionary(ObservableDictionary):
         """
         X = np.asarray(X)
         if X.ndim != 2:
-            raise DimensionMismatchError(
-                f"Expected 2D array, got {X.ndim}D array."
-            )
+            raise DimensionMismatchError(f"Expected 2D array, got {X.ndim}D array.")
         self._n_features = X.shape[1]
         logger.debug("IdentityDictionary fitted with %d features.", self._n_features)
         return self
@@ -123,9 +121,7 @@ class IdentityDictionary(ObservableDictionary):
             raise NotFittedError("IdentityDictionary has not been fitted.")
         X = np.asarray(X, dtype=np.float64)
         if X.ndim != 2:
-            raise DimensionMismatchError(
-                f"Expected 2D array, got {X.ndim}D array."
-            )
+            raise DimensionMismatchError(f"Expected 2D array, got {X.ndim}D array.")
         if X.shape[1] != self._n_features:
             raise DimensionMismatchError(
                 f"Expected {self._n_features} features, got {X.shape[1]}."
@@ -175,15 +171,11 @@ class PolynomialDictionary(ObservableDictionary):
         """
         X = np.asarray(X)
         if X.ndim != 2:
-            raise DimensionMismatchError(
-                f"Expected 2D array, got {X.ndim}D array."
-            )
+            raise DimensionMismatchError(f"Expected 2D array, got {X.ndim}D array.")
         self._n_features = X.shape[1]
         # include_bias=False excludes the constant term.
         # We still get linear terms (degree 1) which we need to strip.
-        self._poly = PolynomialFeatures(
-            degree=self._degree, include_bias=False
-        )
+        self._poly = PolynomialFeatures(degree=self._degree, include_bias=False)
         self._poly.fit(X)
         # Identify which output columns correspond to degree >= 2.
         # powers_ has shape (n_output_features, n_features) with exponent sums.
@@ -217,9 +209,7 @@ class PolynomialDictionary(ObservableDictionary):
             raise NotFittedError("PolynomialDictionary has not been fitted.")
         X = np.asarray(X, dtype=np.float64)
         if X.ndim != 2:
-            raise DimensionMismatchError(
-                f"Expected 2D array, got {X.ndim}D array."
-            )
+            raise DimensionMismatchError(f"Expected 2D array, got {X.ndim}D array.")
         if X.shape[1] != self._n_features:
             raise DimensionMismatchError(
                 f"Expected {self._n_features} features, got {X.shape[1]}."
@@ -282,9 +272,7 @@ class RBFDictionary(ObservableDictionary):
         """
         X = np.asarray(X, dtype=np.float64)
         if X.ndim != 2:
-            raise DimensionMismatchError(
-                f"Expected 2D array, got {X.ndim}D array."
-            )
+            raise DimensionMismatchError(f"Expected 2D array, got {X.ndim}D array.")
 
         # Use MiniBatchKMeans for efficiency on larger datasets.
         n_centers = min(self._n_centers, X.shape[0])
@@ -334,9 +322,7 @@ class RBFDictionary(ObservableDictionary):
             raise NotFittedError("RBFDictionary has not been fitted.")
         X = np.asarray(X, dtype=np.float64)
         if X.ndim != 2:
-            raise DimensionMismatchError(
-                f"Expected 2D array, got {X.ndim}D array."
-            )
+            raise DimensionMismatchError(f"Expected 2D array, got {X.ndim}D array.")
         if X.shape[1] != self._centers.shape[1]:
             raise DimensionMismatchError(
                 f"Expected {self._centers.shape[1]} features, got {X.shape[1]}."
@@ -368,8 +354,8 @@ class RBFDictionary(ObservableDictionary):
             Shape (n, m) of squared distances.
         """
         # ||a - b||^2 = ||a||^2 + ||b||^2 - 2 a.b
-        A_sq = np.sum(A ** 2, axis=1, keepdims=True)  # (n, 1)
-        B_sq = np.sum(B ** 2, axis=1, keepdims=True)  # (m, 1)
+        A_sq = np.sum(A**2, axis=1, keepdims=True)  # (n, 1)
+        B_sq = np.sum(B**2, axis=1, keepdims=True)  # (m, 1)
         cross = A @ B.T  # (n, m)
         dists_sq = A_sq + B_sq.T - 2.0 * cross
         # Clamp negative values arising from floating-point errors.
@@ -394,9 +380,7 @@ class CompositeDictionary(ObservableDictionary):
 
     def __init__(self, dictionaries: Sequence[ObservableDictionary]) -> None:
         # Filter out IdentityDictionary instances from input; we prepend our own.
-        non_identity = [
-            d for d in dictionaries if not isinstance(d, IdentityDictionary)
-        ]
+        non_identity = [d for d in dictionaries if not isinstance(d, IdentityDictionary)]
         self._identity = IdentityDictionary()
         self._dictionaries: list[ObservableDictionary] = [self._identity] + non_identity
         self._fitted = False
@@ -415,9 +399,7 @@ class CompositeDictionary(ObservableDictionary):
         """
         X = np.asarray(X)
         if X.ndim != 2:
-            raise DimensionMismatchError(
-                f"Expected 2D array, got {X.ndim}D array."
-            )
+            raise DimensionMismatchError(f"Expected 2D array, got {X.ndim}D array.")
         for d in self._dictionaries:
             d.fit(X)
         self._fitted = True

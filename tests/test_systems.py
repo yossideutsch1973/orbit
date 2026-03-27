@@ -18,7 +18,6 @@ from koopsim.systems.mechanical import (
 )
 from koopsim.utils.dictionary import IdentityDictionary
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -80,9 +79,7 @@ class TestSnapshotPairShape:
         n_steps = 20
         n_traj = 3
         rng = np.random.default_rng(0)
-        X, Y = system.generate_snapshots(
-            x0, dt, n_steps, n_trajectories=n_traj, rng=rng
-        )
+        X, Y = system.generate_snapshots(x0, dt, n_steps, n_trajectories=n_traj, rng=rng)
         assert X.shape == (n_steps * n_traj, system.state_dim)
         assert Y.shape == (n_steps * n_traj, system.state_dim)
 
@@ -118,7 +115,7 @@ class TestRLCAnalytical:
         # Analytical: characteristic equation s^2 + (R/L)s + 1/(LC) = 0
         alpha = R / (2.0 * L)
         omega_0_sq = 1.0 / (L * C)
-        discriminant = alpha ** 2 - omega_0_sq
+        discriminant = alpha**2 - omega_0_sq
 
         assert discriminant < 0, "Expected underdamped case"
 
@@ -158,8 +155,10 @@ class TestHopfLimitCycle:
         expected_radius = np.sqrt(mu)
 
         np.testing.assert_allclose(
-            radii.mean(), expected_radius, atol=0.05,
-            err_msg=f"Mean radius {radii.mean():.4f} does not match sqrt(mu)={expected_radius:.4f}",
+            radii.mean(),
+            expected_radius,
+            atol=0.05,
+            err_msg=f"Mean radius {radii.mean():.4f} != sqrt(mu)={expected_radius:.4f}",
         )
         # Radius should not vary much on the limit cycle
         assert radii.std() < 0.05, f"Radius std too large: {radii.std():.4f}"
@@ -191,7 +190,7 @@ class TestSpringMassEnergy:
         for idx in range(n_steps + 1):
             q = traj[idx, :n]
             v = traj[idx, n:]
-            KE = 0.5 * m * np.sum(v ** 2)
+            KE = 0.5 * m * np.sum(v**2)
             PE = 0.5 * q @ K_mat @ q
             energies[idx] = KE + PE
 
@@ -216,9 +215,7 @@ class TestEndToEndSmoke:
         n_steps = 100
         rng = np.random.default_rng(42)
 
-        X, Y = system.generate_snapshots(
-            x0, dt, n_steps, n_trajectories=3, rng=rng
-        )
+        X, Y = system.generate_snapshots(x0, dt, n_steps, n_trajectories=3, rng=rng)
 
         model = EDMD(dictionary=IdentityDictionary(), regularization=1e-6)
         model.fit(X, Y, dt)
@@ -334,9 +331,7 @@ class TestLorenzAttractor:
         assert np.linalg.norm(traj_a[0] - traj_b[0]) < 1e-9
         # Should diverge significantly by the end
         final_diff = np.linalg.norm(traj_a[-1] - traj_b[-1])
-        assert final_diff > 1.0, (
-            f"Trajectories did not diverge enough: diff = {final_diff:.2e}"
-        )
+        assert final_diff > 1.0, f"Trajectories did not diverge enough: diff = {final_diff:.2e}"
 
 
 # ---------------------------------------------------------------------------

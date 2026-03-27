@@ -21,10 +21,12 @@ def simple_linear_system(rng):
     """
     theta = np.pi / 6  # 30 degrees
     dt = 0.1
-    R = np.array([
-        [np.cos(theta), -np.sin(theta)],
-        [np.sin(theta), np.cos(theta)],
-    ])
+    R = np.array(
+        [
+            [np.cos(theta), -np.sin(theta)],
+            [np.sin(theta), np.cos(theta)],
+        ]
+    )
     n_samples = 200
     X = rng.standard_normal((n_samples, 2))
     Y = X @ R.T

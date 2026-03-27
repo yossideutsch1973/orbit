@@ -13,7 +13,6 @@ from koopsim.utils.dictionary import (
     RBFDictionary,
 )
 
-
 # ---------------------------------------------------------------------------
 # IdentityDictionary
 # ---------------------------------------------------------------------------
@@ -83,10 +82,12 @@ class TestPolynomialDictionary:
         d = PolynomialDictionary(degree=2).fit(X)
         out = d.transform(X)
         # Degree-2 terms for 2 features: x1^2, x1*x2, x2^2
-        expected = np.array([
-            [1.0, 2.0, 4.0],    # 1^2, 1*2, 2^2
-            [9.0, 12.0, 16.0],  # 3^2, 3*4, 4^2
-        ])
+        expected = np.array(
+            [
+                [1.0, 2.0, 4.0],  # 1^2, 1*2, 2^2
+                [9.0, 12.0, 16.0],  # 3^2, 3*4, 4^2
+            ]
+        )
         np.testing.assert_allclose(out, expected)
 
     def test_correct_values_degree3(self) -> None:
@@ -263,10 +264,12 @@ class TestNumericalStability:
         rbf = RBFDictionary(n_centers=50).fit(X)
         assert np.all(np.isfinite(rbf.transform(X)))
 
-        comp = CompositeDictionary([
-            PolynomialDictionary(degree=2),
-            RBFDictionary(n_centers=30),
-        ]).fit(X)
+        comp = CompositeDictionary(
+            [
+                PolynomialDictionary(degree=2),
+                RBFDictionary(n_centers=30),
+            ]
+        ).fit(X)
         assert np.all(np.isfinite(comp.transform(X)))
 
     def test_large_values_rbf_stable(self, rng: np.random.Generator) -> None:
