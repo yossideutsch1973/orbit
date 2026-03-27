@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from koopsim.core.edmd import EDMD
+from koopsim.core.exceptions import KoopSimError
 from koopsim.core.validation import ModelValidator
 from koopsim.utils.dictionary import (
     CompositeDictionary,
@@ -93,6 +94,12 @@ def auto_tune(
     """
     X = np.asarray(X, dtype=np.float64)
     Y = np.asarray(Y, dtype=np.float64)
+
+    if X.shape[0] < n_folds:
+        raise ValueError(
+            f"n_samples ({X.shape[0]}) must be >= n_folds ({n_folds}). "
+            f"Reduce n_folds or provide more data."
+        )
 
     if poly_degrees is None:
         poly_degrees = [2, 3, 4]
@@ -179,20 +186,26 @@ def auto_tune(
             if verbose:
                 _log_progress(evaluated, total, poly_deg, rbf_n, reg, mean_error)
 
+    if not best_config or not np.isfinite(best_error):
+        raise KoopSimError(
+            "Auto-tune failed: no configuration produced a finite CV error. "
+            "Check your data or try different hyperparameter ranges."
+        )
+
     if verbose:
         logger.info(
             "Auto-tune best: poly=%s, rbf=%s, reg=%.1e, cv_%s=%.6f",
-            best_config.get("poly_degree"),
-            best_config.get("rbf_centers"),
-            best_config.get("regularization", 0),
+            best_config["poly_degree"],
+            best_config["rbf_centers"],
+            best_config["regularization"],
             metric,
             best_error,
         )
 
     return AutoTuneResult(
-        poly_degree=best_config.get("poly_degree"),
-        rbf_centers=best_config.get("rbf_centers"),
-        regularization=best_config.get("regularization", 1e-6),
+        poly_degree=best_config["poly_degree"],
+        rbf_centers=best_config["rbf_centers"],
+        regularization=best_config["regularization"],
         cv_error=best_error,
         all_results=all_results,
     )

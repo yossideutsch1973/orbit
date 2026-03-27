@@ -81,6 +81,16 @@ SYSTEM_REGISTRY: dict[str, dict] = {
         "class": "PointVortexSystem",
         "module": "koopsim.systems.fluid_particles",
     },
+    "lorenz": {
+        "label": "Lorenz Attractor",
+        "class": "LorenzAttractor",
+        "module": "koopsim.systems.chaotic",
+    },
+    "lotka-volterra": {
+        "label": "Lotka-Volterra (Predator-Prey)",
+        "class": "LotkaVolterra",
+        "module": "koopsim.systems.chaotic",
+    },
 }
 
 

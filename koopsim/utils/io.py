@@ -132,15 +132,20 @@ def load_model(path: str | Path) -> KoopmanModel:
 
     logger.info("Loading model from %s", path)
 
-    with h5py.File(path, "r") as f:
-        model_class = f.attrs["model_class"]
+    try:
+        with h5py.File(path, "r") as f:
+            model_class = f.attrs["model_class"]
 
-        if model_class == "NeuralKoopman":
-            model = _load_neural_model(f)
-        elif model_class == "EDMD":
-            model = _load_edmd_model(f)
-        else:
-            raise KoopSimError(f"Unsupported model class in file: {model_class}.")
+            if model_class == "NeuralKoopman":
+                model = _load_neural_model(f)
+            elif model_class == "EDMD":
+                model = _load_edmd_model(f)
+            else:
+                raise KoopSimError(f"Unsupported model class in file: {model_class}.")
+    except KoopSimError:
+        raise
+    except (OSError, KeyError) as exc:
+        raise KoopSimError(f"Failed to load model from {path}: {exc}") from exc
 
     logger.info("Model loaded successfully from %s", path)
     return model
