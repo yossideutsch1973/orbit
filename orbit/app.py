@@ -3,6 +3,7 @@
 Run with:
     streamlit run orbit/app.py
 """
+
 from __future__ import annotations
 
 import io
@@ -14,6 +15,7 @@ import tempfile
 os.environ["TQDM_DISABLE"] = "1"
 
 import warnings
+
 warnings.filterwarnings("ignore")
 
 # Ensure the project root and orbit dir are on sys.path
@@ -23,24 +25,23 @@ for _p in (_PROJECT_ROOT, _THIS_DIR):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-import matplotlib
+import matplotlib  # noqa: E402
+
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import numpy as np
-import streamlit as st
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import streamlit as st  # noqa: E402
+from analysis import compute_accuracy_pct, engineering_report  # noqa: E402
+from scipy.signal import savgol_filter  # noqa: E402
+from style import ACCENT, CUSTOM_CSS, MPL_STYLE_PARAMS, SUCCESS  # noqa: E402
 
-from style import CUSTOM_CSS, MPL_STYLE_PARAMS, ACCENT, SUCCESS
-from analysis import engineering_report, compute_accuracy_pct
-
-from scipy.signal import savgol_filter
-
-from koopsim import KoopSim
-from koopsim.systems import (
+from koopsim import KoopSim  # noqa: E402
+from koopsim.systems import (  # noqa: E402
+    EulerBernoulliBeam,
     HopfBifurcation,
     RLCCircuit,
     SpringMassDamper,
     VanDerPolOscillator,
-    EulerBernoulliBeam,
 )
 
 # ── Page config ──────────────────────────────────────────────────────
@@ -49,8 +50,15 @@ st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 plt.rcParams.update(MPL_STYLE_PARAMS)
 
 # ── Session state defaults ───────────────────────────────────────────
-for key, default in {"X": None, "Y": None, "dt": None, "system_name": None,
-                      "model": None, "report": None, "traj_true": None}.items():
+for key, default in {
+    "X": None,
+    "Y": None,
+    "dt": None,
+    "system_name": None,
+    "model": None,
+    "report": None,
+    "traj_true": None,
+}.items():
     if key not in st.session_state:
         st.session_state[key] = default
 
@@ -89,8 +97,13 @@ def _run_demo(system, name, poly_degree=None, rbf_centers=None, regularization=1
     traj = system.generate_trajectory(x0, dt=dt, n_steps=400)
     st.session_state["traj_true"] = traj
 
-    sim = KoopSim(method="edmd", poly_degree=poly_degree,
-                  rbf_centers=rbf_centers, regularization=regularization, verbose=False)
+    sim = KoopSim(
+        method="edmd",
+        poly_degree=poly_degree,
+        rbf_centers=rbf_centers,
+        regularization=regularization,
+        verbose=False,
+    )
     sim.fit(X, Y, dt)
     st.session_state["model"] = sim
 
@@ -105,7 +118,10 @@ def _run_demo(system, name, poly_degree=None, rbf_centers=None, regularization=1
 # HEADER
 # =====================================================================
 st.markdown("# ◎ Orbit")
-st.markdown("*Instant dynamics prediction for vibrations, circuits & control systems. No PhD. No $10k license.*")
+st.markdown(
+    "*Instant dynamics prediction for vibrations, circuits"
+    " & control systems. No PhD. No $10k license.*"
+)
 st.divider()
 
 # =====================================================================
@@ -121,8 +137,11 @@ with col_upload:
     st.caption("CSV: columns = variables, rows = time steps")
     uploaded = st.file_uploader("Upload CSV", type=["csv"], label_visibility="collapsed")
     upload_dt = st.number_input("Time step (s)", min_value=1e-6, value=0.01, format="%.6f")
-    denoise_on = st.checkbox("🧹 Denoise input data", value=False,
-                             help="Apply Savitzky-Golay smoothing filter to reduce sensor noise.")
+    denoise_on = st.checkbox(
+        "🧹 Denoise input data",
+        value=False,
+        help="Apply Savitzky-Golay smoothing filter to reduce sensor noise.",
+    )
     if uploaded is not None:
         if st.button("Load data", key="btn_csv"):
             content = uploaded.read().decode("utf-8")
@@ -152,28 +171,47 @@ with col_upload:
 # ── Known system ─────────────────────────────────────────────────────
 with col_known:
     st.markdown("**I have a known system**")
-    sys_choice = st.selectbox("System", ["RLC Circuit", "Mass-Spring-Damper",
-                                          "Vibrating Beam", "Van der Pol", "Hopf Limit Cycle"])
+    sys_choice = st.selectbox(
+        "System",
+        ["RLC Circuit", "Mass-Spring-Damper", "Vibrating Beam", "Van der Pol", "Hopf Limit Cycle"],
+    )
+
+    def _sys_factory():  # noqa: E501
+        return None
 
     if sys_choice == "RLC Circuit":
         R = st.slider("Resistance R (Ω)", 0.1, 20.0, 1.0, 0.1)
         L = st.slider("Inductance L (H)", 0.01, 10.0, 1.0, 0.01)
         C = st.slider("Capacitance C (F)", 0.001, 5.0, 1.0, 0.001)
-        _sys_factory = lambda: RLCCircuit(R=R, L=L, C=C)
+
+        def _sys_factory():
+            return RLCCircuit(R=R, L=L, C=C)
+
     elif sys_choice == "Mass-Spring-Damper":
         nm = st.slider("Number of masses", 1, 10, 3, 1)
         k = st.slider("Spring stiffness k (N/m)", 0.1, 50.0, 1.0, 0.1)
         c = st.slider("Damping c (Ns/m)", 0.0, 5.0, 0.1, 0.01)
         m = st.slider("Mass m (kg)", 0.1, 20.0, 1.0, 0.1)
-        _sys_factory = lambda: SpringMassDamper(n_masses=nm, k=k, c=c, m=m)
+
+        def _sys_factory():
+            return SpringMassDamper(n_masses=nm, k=k, c=c, m=m)
+
     elif sys_choice == "Vibrating Beam":
-        _sys_factory = lambda: EulerBernoulliBeam()
+
+        def _sys_factory():
+            return EulerBernoulliBeam()
+
     elif sys_choice == "Van der Pol":
         mu = st.slider("Nonlinearity μ", 0.1, 10.0, 1.0, 0.1)
-        _sys_factory = lambda: VanDerPolOscillator(mu=mu)
+
+        def _sys_factory():
+            return VanDerPolOscillator(mu=mu)
+
     else:  # Hopf
         mu = st.slider("Bifurcation parameter μ", 0.1, 5.0, 1.0, 0.1)
-        _sys_factory = lambda: HopfBifurcation(mu=mu)
+
+        def _sys_factory():
+            return HopfBifurcation(mu=mu)
 
     if st.button("Simulate system", key="btn_sim"):
         system = _sys_factory()
@@ -205,15 +243,22 @@ with col_demo:
         st.rerun()
 
     if st.button("🌀  Limit Cycle Demo", key="btn_hopf"):
-        _run_demo(HopfBifurcation(mu=1.0), "Limit Cycle Demo",
-                  poly_degree=3, rbf_centers=30, regularization=1e-2)
+        _run_demo(
+            HopfBifurcation(mu=1.0),
+            "Limit Cycle Demo",
+            poly_degree=3,
+            rbf_centers=30,
+            regularization=1e-2,
+        )
         st.rerun()
 
 # ── Data preview ─────────────────────────────────────────────────────
 if _has_data():
     X = st.session_state["X"]
-    st.success(f"**{st.session_state['system_name']}** — {X.shape[0]} samples, "
-               f"{X.shape[1]} variables, dt = {st.session_state['dt']:.4g} s")
+    st.success(
+        f"**{st.session_state['system_name']}** — {X.shape[0]} samples, "
+        f"{X.shape[1]} variables, dt = {st.session_state['dt']:.4g} s"
+    )
 
 st.divider()
 
@@ -227,8 +272,9 @@ if _has_data():
         st.success("Model ready!")
     else:
         with st.expander("Quality settings", expanded=False):
-            quality = st.select_slider("Quality", options=["Fast", "Balanced", "Accurate"],
-                                       value="Balanced")
+            quality = st.select_slider(
+                "Quality", options=["Fast", "Balanced", "Accurate"], value="Balanced"
+            )
         if st.button("🚀  Build Prediction Model", key="btn_build", type="primary"):
             qmap = {"Fast": (None, None), "Balanced": (2, None), "Accurate": (3, 50)}
             pd_, rb_ = qmap[quality]
@@ -240,7 +286,8 @@ if _has_data():
             report = engineering_report(spec["eigenvalues"], st.session_state["dt"])
             n_test = min(200, st.session_state["X"].shape[0])
             report["accuracy_pct"] = compute_accuracy_pct(
-                sim.model, st.session_state["X"][:n_test], st.session_state["Y"][:n_test])
+                sim.model, st.session_state["X"][:n_test], st.session_state["Y"][:n_test]
+            )
             st.session_state["report"] = report
             st.rerun()
 
@@ -254,19 +301,24 @@ if _has_data():
 
         m1, m2, m3, m4 = st.columns(4)
         if is_linear:
-            m1.metric("Prediction Accuracy", f'{acc:.1f}%')
+            m1.metric("Prediction Accuracy", f"{acc:.1f}%")
         else:
-            m1.metric("One-Step Accuracy", f'{acc:.1f}%')
+            m1.metric("One-Step Accuracy", f"{acc:.1f}%")
         m2.metric("System Type", "Linear" if is_linear else "Nonlinear")
-        m3.metric("Dominant Frequency", f'{rpt["dominant_freq_hz"]:.3f} Hz')
-        settling = f'{rpt["settling_time_s"]:.2f} s' if rpt["settling_time_s"] else "N/A"
+        m3.metric("Dominant Frequency", f"{rpt['dominant_freq_hz']:.3f} Hz")
+        settling = f"{rpt['settling_time_s']:.2f} s" if rpt["settling_time_s"] else "N/A"
         m4.metric("Settling Time", settling)
 
         if is_linear:
-            st.info("✅ **Linear system detected** — predictions are mathematically exact at all time horizons.")
+            st.info(
+                "✅ **Linear system detected** — predictions are"
+                " mathematically exact at all time horizons."
+            )
         else:
-            st.warning("⚠️ **Nonlinear system** — short-term predictions are highly accurate. "
-                       "Accuracy decreases at longer horizons. Use confidence bands to gauge reliability.")
+            st.warning(
+                "⚠️ **Nonlinear system** — short-term predictions are highly accurate. "
+                "Accuracy decreases at longer horizons. Use confidence bands to gauge reliability."
+            )
 
 st.divider()
 
@@ -285,14 +337,16 @@ if _has_model():
     traj_true = st.session_state.get("traj_true")
 
     tab_predict, tab_report, tab_export = st.tabs(
-        ["📈 Predict Future", "📊 Stability Report", "💾 Export"])
+        ["📈 Predict Future", "📊 Stability Report", "💾 Export"]
+    )
 
     # ── Predict Future ────────────────────────────────────────────────
     with tab_predict:
         default_x0 = X[0]
         x0_str = ", ".join(f"{v:.4g}" for v in default_x0)
-        x0_input = st.text_input(f"Initial state ({n_state} values, comma-separated)",
-                                  value=x0_str)
+        x0_input = st.text_input(
+            f"Initial state ({n_state} values, comma-separated)", value=x0_str
+        )
 
         x0 = None
         try:
@@ -305,15 +359,19 @@ if _has_model():
 
         if x0 is not None:
             training_window = X.shape[0] * dt_val
-            t_pred = st.slider("Prediction horizon (seconds)", 0.01,
-                                float(training_window * 5), float(training_window))
+            t_pred = st.slider(
+                "Prediction horizon (seconds)",
+                0.01,
+                float(training_window * 5),
+                float(training_window),
+            )
 
             # FIX: Variable selector for high-dim systems
             if n_state > 4:
-                var_options = [f"Variable {i+1}" for i in range(n_state)]
-                selected_vars = st.multiselect("Select variables to plot",
-                                                var_options,
-                                                default=var_options[:4])
+                var_options = [f"Variable {i + 1}" for i in range(n_state)]
+                selected_vars = st.multiselect(
+                    "Select variables to plot", var_options, default=var_options[:4]
+                )
                 plot_indices = [int(v.split()[-1]) - 1 for v in selected_vars]
             else:
                 plot_indices = list(range(n_state))
@@ -348,17 +406,33 @@ if _has_model():
                 for plot_i, var_i in enumerate(plot_indices):
                     ax = axes[plot_i, 0]
                     # Smooth measured data
-                    ax.plot(times_true, true_data[:, var_i],
-                            color="#4F8EF7", lw=2, label="Measured", alpha=0.9)
+                    ax.plot(
+                        times_true,
+                        true_data[:, var_i],
+                        color="#4F8EF7",
+                        lw=2,
+                        label="Measured",
+                        alpha=0.9,
+                    )
                     # Prediction
-                    ax.plot(times, traj_pred[:, var_i],
-                            color="#FF5252", lw=2, ls="--", label="Predicted")
+                    ax.plot(
+                        times,
+                        traj_pred[:, var_i],
+                        color="#FF5252",
+                        lw=2,
+                        ls="--",
+                        label="Predicted",
+                    )
                     # Confidence band
                     band = amplitude[var_i] * max_growth * np.sqrt(times / dt_val + 1) * 0.5
-                    ax.fill_between(times,
-                                    traj_pred[:, var_i] - band,
-                                    traj_pred[:, var_i] + band,
-                                    color="#FF5252", alpha=0.08, label="Confidence band")
+                    ax.fill_between(
+                        times,
+                        traj_pred[:, var_i] - band,
+                        traj_pred[:, var_i] + band,
+                        color="#FF5252",
+                        alpha=0.08,
+                        label="Confidence band",
+                    )
                     ax.set_ylabel(f"Var {var_i + 1}")
                     ax.legend(fontsize=8, loc="upper right")
                     ax.grid(True, alpha=0.2)
@@ -372,30 +446,34 @@ if _has_model():
                 final = sim.predict(x0, t_pred)
                 val_cols = st.columns(min(n_state, 6))
                 for i in range(min(n_state, 6)):
-                    val_cols[i].metric(f"Var {i+1} at t={t_pred:.2f}s", f"{final[i]:.6g}")
+                    val_cols[i].metric(f"Var {i + 1} at t={t_pred:.2f}s", f"{final[i]:.6g}")
 
     # ── Stability Report ──────────────────────────────────────────────
     with tab_report:
         if rpt:
             r1, r2 = st.columns(2)
             r1.metric("Classification", rpt["classification"])
-            r1.metric("Dominant Frequency", f'{rpt["dominant_freq_hz"]:.4f} Hz')
-            settling = f'{rpt["settling_time_s"]:.3f} s' if rpt["settling_time_s"] else "N/A"
+            r1.metric("Dominant Frequency", f"{rpt['dominant_freq_hz']:.4f} Hz")
+            settling = f"{rpt['settling_time_s']:.3f} s" if rpt["settling_time_s"] else "N/A"
             r1.metric("Settling Time", settling)
-            r2.metric("Damping Ratio", f'{rpt["dominant_damping"]:.4f}')
-            overshoot = f'{rpt["peak_overshoot_pct"]:.2f}%' if rpt["peak_overshoot_pct"] else "N/A"
+            r2.metric("Damping Ratio", f"{rpt['dominant_damping']:.4f}")
+            overshoot = f"{rpt['peak_overshoot_pct']:.2f}%" if rpt["peak_overshoot_pct"] else "N/A"
             r2.metric("Peak Overshoot", overshoot)
             acc_label = "Accuracy (exact)" if rpt["is_linear"] else "One-Step Accuracy"
-            r2.metric(acc_label, f'{rpt["accuracy_pct"]:.1f}%')
+            r2.metric(acc_label, f"{rpt['accuracy_pct']:.1f}%")
 
             # Resonance risk warning
             if abs(rpt["dominant_damping"]) < 0.05 and rpt["dominant_freq_hz"] > 0.001:
-                st.error("🔴 **Resonance Risk** — Damping ratio is very low "
-                         f"({rpt['dominant_damping']:.4f}). This system is near resonance "
-                         "and may experience large oscillations under excitation.")
+                st.error(
+                    "🔴 **Resonance Risk** — Damping ratio is very low "
+                    f"({rpt['dominant_damping']:.4f}). This system is near resonance "
+                    "and may experience large oscillations under excitation."
+                )
             elif abs(rpt["dominant_damping"]) < 0.15 and rpt["dominant_freq_hz"] > 0.001:
-                st.warning("🟡 **Low Damping** — Damping ratio is moderate "
-                           f"({rpt['dominant_damping']:.4f}). Monitor for resonance under load.")
+                st.warning(
+                    "🟡 **Low Damping** — Damping ratio is moderate "
+                    f"({rpt['dominant_damping']:.4f}). Monitor for resonance under load."
+                )
 
             st.info(rpt["summary"])
 
@@ -431,13 +509,14 @@ if _has_model():
             times_e = np.linspace(0, X.shape[0] * dt_val, 200)
             traj_e = sim.predict_trajectory(x0_e, times_e)
             buf = io.StringIO()
-            header = ",".join(["time"] + [f"var_{i+1}" for i in range(n_state)])
+            header = ",".join(["time"] + [f"var_{i + 1}" for i in range(n_state)])
             buf.write(header + "\n")
             for j, t in enumerate(times_e):
                 row = f"{t:.8g}," + ",".join(f"{traj_e[j, k]:.8g}" for k in range(n_state))
                 buf.write(row + "\n")
-            st.download_button("📥 Download CSV", buf.getvalue(),
-                               "orbit_predictions.csv", "text/csv")
+            st.download_button(
+                "📥 Download CSV", buf.getvalue(), "orbit_predictions.csv", "text/csv"
+            )
 
         with e2:
             st.markdown("**Model file**")
@@ -446,18 +525,22 @@ if _has_model():
             with open(tmp.name, "rb") as f:
                 model_bytes = f.read()
             os.unlink(tmp.name)
-            st.download_button("📥 Download .koop", model_bytes,
-                               "orbit_model.koop", "application/octet-stream")
+            st.download_button(
+                "📥 Download .koop", model_bytes, "orbit_model.koop", "application/octet-stream"
+            )
 
         with e3:
             st.markdown("**Python snippet**")
-            st.code('''from koopsim import KoopSim
+            st.code(
+                """from koopsim import KoopSim
 import numpy as np
 
 sim = KoopSim.load("orbit_model.koop")
 x0 = np.array([...])  # initial state
 result = sim.predict(x0, t=5.0)
-print(result)''', language="python")
+print(result)""",
+                language="python",
+            )
 
 elif not _has_data():
     st.info("👆 Select a system or upload data above to get started.")

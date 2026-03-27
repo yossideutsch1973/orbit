@@ -3,9 +3,10 @@
 Streamlit Cloud expects the app at the repo root. This file
 bootstraps the actual Orbit app from the orbit/ directory.
 """
+
 import os
-import sys
 import runpy
+import sys
 
 # Add project root and orbit dir to path
 _root = os.path.dirname(os.path.abspath(__file__))

@@ -34,6 +34,24 @@ def _import_torch():
     return torch, nn, F, pl
 
 
+def _resolve_accelerator(requested: str) -> str:
+    """Return a working accelerator string, falling back to 'cpu' if CUDA is broken."""
+    if requested == "cpu":
+        return "cpu"
+    try:
+        import torch
+
+        if torch.cuda.is_available():
+            torch.cuda.get_device_properties(0)
+            return requested  # CUDA works fine
+    except RuntimeError:
+        import os
+
+        logger.info("CUDA detected but unusable (driver mismatch?), falling back to CPU.")
+        os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    return "cpu"
+
+
 def _build_mlp(
     layer_sizes: list[int],
     nn_module: Any,
@@ -194,6 +212,7 @@ class NeuralKoopman(KoopmanModel):
         batch_size: int = 64,
         loss_weights: dict | None = None,
         verbose: bool = True,
+        accelerator: str = "auto",
     ) -> None:
         # Verify torch/lightning are available early
         _import_torch()
@@ -210,6 +229,7 @@ class NeuralKoopman(KoopmanModel):
             "linearity": 0.1,
         }
         self._verbose = verbose
+        self._accelerator = accelerator
 
         # Fitted attributes (set by fit)
         self.K_: np.ndarray | None = None
@@ -289,12 +309,14 @@ class NeuralKoopman(KoopmanModel):
         )
 
         # Train
+        accelerator = _resolve_accelerator(self._accelerator)
         trainer = pl.Trainer(
             max_epochs=self._max_epochs,
             enable_progress_bar=self._verbose,
             enable_model_summary=False,
             enable_checkpointing=False,
             logger=False,
+            accelerator=accelerator,
         )
         trainer.fit(autoencoder, dataloader)
 

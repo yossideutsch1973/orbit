@@ -43,8 +43,8 @@ def engineering_report(eigenvalues: np.ndarray, dt: float) -> dict:
 
     # ---- continuous-time equivalents ----
     log_mag = np.log(np.clip(magnitudes, 1e-300, None))
-    sigma = log_mag / dt           # real part of continuous eigenvalue
-    omega_d = angles / dt          # damped frequency (rad/s)
+    sigma = log_mag / dt  # real part of continuous eigenvalue
+    omega_d = angles / dt  # damped frequency (rad/s)
     omega_n = np.sqrt(sigma**2 + omega_d**2)  # natural frequency (rad/s)
 
     # Damping ratio (guard division by zero)
@@ -70,14 +70,20 @@ def engineering_report(eigenvalues: np.ndarray, dt: float) -> dict:
     if np.any(stable_mask):
         # slowest decay -> smallest |sigma| among stable modes
         abs_sigma_stable = np.abs(sigma[stable_mask])
-        slowest = np.min(abs_sigma_stable[abs_sigma_stable > 1e-12]) if np.any(abs_sigma_stable > 1e-12) else None
+        slowest = (
+            np.min(abs_sigma_stable[abs_sigma_stable > 1e-12])
+            if np.any(abs_sigma_stable > 1e-12)
+            else None
+        )
         settling_time = 4.0 / slowest if slowest is not None else None
     else:
         settling_time = None
 
     # ---- peak overshoot ----
     if dominant_damping > 0 and dominant_damping < 1.0:
-        peak_overshoot = 100.0 * np.exp(-np.pi * dominant_damping / np.sqrt(1.0 - dominant_damping**2))
+        peak_overshoot = 100.0 * np.exp(
+            -np.pi * dominant_damping / np.sqrt(1.0 - dominant_damping**2)
+        )
     else:
         peak_overshoot = None
 
@@ -101,9 +107,7 @@ def engineering_report(eigenvalues: np.ndarray, dt: float) -> dict:
         classification = "Stable"
 
     # ---- human-readable summary ----
-    summary = _build_summary(
-        classification, dominant_freq_hz, dominant_damping, settling_time
-    )
+    summary = _build_summary(classification, dominant_freq_hz, dominant_damping, settling_time)
 
     return {
         "classification": classification,
@@ -135,11 +139,11 @@ def _build_summary(
     elif "Oscillatory" in classification:
         parts.append(f"This system oscillates at {freq_hz:.3f} Hz.")
         if settling_time is not None:
-            parts.append(f"It settles to equilibrium in approximately {settling_time:.2f} seconds.")
+            parts.append(
+                f"It settles to equilibrium in approximately {settling_time:.2f} seconds."
+            )
     elif classification == "Unstable":
-        parts.append(
-            "This system is unstable -- predictions diverge from equilibrium over time."
-        )
+        parts.append("This system is unstable -- predictions diverge from equilibrium over time.")
     else:
         parts.append("This system is stable and converges to equilibrium.")
         if settling_time is not None:
