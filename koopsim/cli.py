@@ -219,6 +219,8 @@ def validate(ctx, model, test_data, dt, metric):
             "vanderpol",
             "beam",
             "point-vortex",
+            "lorenz",
+            "lotka-volterra",
         ]
     ),
 )
@@ -234,6 +236,8 @@ def generate(ctx, system, output, dt, n_steps, n_trajectories, noise_std):
         DoubleGyre,
         EulerBernoulliBeam,
         HopfBifurcation,
+        LorenzAttractor,
+        LotkaVolterra,
         PointVortexSystem,
         RLCCircuit,
         SpringMassDamper,
@@ -248,6 +252,8 @@ def generate(ctx, system, output, dt, n_steps, n_trajectories, noise_std):
         "vanderpol": VanDerPolOscillator(),
         "beam": EulerBernoulliBeam(),
         "point-vortex": PointVortexSystem(n_vortices=3),
+        "lorenz": LorenzAttractor(),
+        "lotka-volterra": LotkaVolterra(),
     }
 
     sys_instance = system_map[system]

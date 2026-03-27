@@ -202,11 +202,12 @@ class KoopSim:
         n_folds: int = 5,
         metric: str = "rmse",
     ) -> AutoTuneResult:
-        """Auto-select hyperparameters via cross-validation, then fit.
+        """Auto-select EDMD hyperparameters via cross-validation, then fit.
 
-        Evaluates combinations of dictionary type/complexity and
-        regularization using k-fold CV, selects the best, and fits
-        the final model on all data.
+        This method is for EDMD only. It evaluates combinations of
+        dictionary type/complexity and regularization using k-fold CV,
+        selects the best, and fits the final model on all data.
+        The method is set to ``"edmd"`` regardless of the current setting.
 
         Parameters
         ----------
