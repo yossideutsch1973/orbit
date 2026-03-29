@@ -20,6 +20,7 @@ class DKNConfig:
     d_lift: int
     d_out_per_neuron: int
     head_hidden: int = 0
+    broadcast: bool = True
 
 
 class KoopmanNet(nn.Module):
@@ -31,7 +32,10 @@ class KoopmanNet(nn.Module):
         d_in = cfg.state_dim
         layers = []
         for _ in range(cfg.n_layers):
-            layer = KoopmanLayer(d_in, cfg.neurons_per_layer, cfg.d_lift, cfg.d_out_per_neuron)
+            layer = KoopmanLayer(
+                d_in, cfg.neurons_per_layer, cfg.d_lift, cfg.d_out_per_neuron,
+                broadcast=cfg.broadcast,
+            )
             layers.append(layer)
             d_in = layer.d_out
         self.backbone = nn.ModuleList(layers)
@@ -76,3 +80,11 @@ class KoopmanNet(nn.Module):
         logits, values = self.forward(obs)
         dist = Categorical(logits=logits)
         return dist.log_prob(actions), values, dist.entropy()
+
+    def spectral_penalty(self) -> torch.Tensor:
+        """Sum of spectral penalties across all K matrices."""
+        penalty = torch.tensor(0.0, device=next(self.parameters()).device)
+        for layer in self.backbone:
+            for neuron in layer.neurons:
+                penalty = penalty + neuron.spectral_penalty()
+        return penalty

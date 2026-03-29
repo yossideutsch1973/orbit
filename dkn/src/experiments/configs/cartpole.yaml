@@ -6,10 +6,11 @@ seed: 42
 
 dkn:
   n_layers: 2
-  neurons_per_layer: 2
-  d_lift: 8
-  d_out_per_neuron: 4
-  head_hidden: 0  # 0 = linear head directly
+  neurons_per_layer: 4
+  d_lift: 16
+  d_out_per_neuron: 8
+  head_hidden: 32
+  broadcast: true
 
 mlp_baseline:
   hidden: 64
@@ -27,8 +28,9 @@ training:
   max_grad_norm: 0.5
   entropy_coef: 0.01
   value_coef: 0.5
+  spectral_coef: 1.0
 
 logging:
-  log_interval: 10  # episodes
-  spectra_interval: 50  # episodes, eigenvalue snapshots
+  log_interval: 10
+  spectra_interval: 50
   save_model: true

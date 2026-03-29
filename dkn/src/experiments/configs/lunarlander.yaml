@@ -9,7 +9,8 @@ dkn:
   neurons_per_layer: 4
   d_lift: 16
   d_out_per_neuron: 8
-  head_hidden: 64  # MLP head after backbone
+  head_hidden: 64
+  broadcast: true
 
 mlp_baseline:
   hidden: 128
@@ -27,6 +28,7 @@ training:
   max_grad_norm: 0.5
   entropy_coef: 0.01
   value_coef: 0.5
+  spectral_coef: 1.0
 
 logging:
   log_interval: 20

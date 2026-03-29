@@ -34,7 +34,7 @@ def test_gradient_flow():
     layer(torch.randn(8, 4)).sum().backward()
     for neuron in layer.neurons:
         assert neuron.K.grad is not None
-        assert neuron.lift.weight.grad is not None
+        assert neuron.lift[0].weight.grad is not None
 
 
 def test_with_mixing():

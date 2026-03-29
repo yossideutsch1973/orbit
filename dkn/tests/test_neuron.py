@@ -27,7 +27,7 @@ def test_gradient_flow():
     neuron = KoopmanNeuron(d_in=4, d_lift=8, d_out=3)
     x = torch.randn(8, 4)
     neuron(x).sum().backward()
-    assert neuron.lift.weight.grad is not None
+    assert neuron.lift[0].weight.grad is not None  # Linear inside Sequential
     assert neuron.K.grad is not None
     assert neuron.proj.weight.grad is not None
 

@@ -19,6 +19,7 @@ class DKNArchConfig:
     d_lift: int
     d_out_per_neuron: int
     head_hidden: int = 0
+    broadcast: bool = True
 
 
 @dataclass
@@ -37,6 +38,7 @@ class TrainingConfig:
     max_grad_norm: float
     entropy_coef: float
     value_coef: float
+    spectral_coef: float = 1.0
 
 
 @dataclass
@@ -98,4 +100,5 @@ class ExperimentConfig:
             max_grad_norm=t.max_grad_norm,
             entropy_coef=t.entropy_coef,
             value_coef=t.value_coef,
+            spectral_coef=t.spectral_coef,
         )

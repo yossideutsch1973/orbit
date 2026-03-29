@@ -17,6 +17,7 @@ class PPOConfig:
     max_grad_norm: float = 0.5
     entropy_coef: float = 0.01
     value_coef: float = 0.5
+    spectral_coef: float = 0.1
 
 
 class PPOUpdater:
@@ -53,6 +54,9 @@ class PPOUpdater:
                 value_loss = (values - returns[idx]).pow(2).mean()
                 entropy_mean = entropy.mean()
                 loss = policy_loss + self.cfg.value_coef * value_loss - self.cfg.entropy_coef * entropy_mean
+
+                if self.cfg.spectral_coef > 0 and hasattr(self.network, "spectral_penalty"):
+                    loss = loss + self.cfg.spectral_coef * self.network.spectral_penalty()
 
                 self.optimizer.zero_grad()
                 loss.backward()
