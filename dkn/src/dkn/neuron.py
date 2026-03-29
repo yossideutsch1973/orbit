@@ -16,7 +16,7 @@ class KoopmanNeuron(nn.Module):
             eps: Scale of random perturbation for near-identity K init.
         """
         super().__init__()
-        self.lift = nn.Sequential(nn.Linear(d_in, d_lift), nn.ReLU())
+        self.lift = nn.Sequential(nn.Linear(d_in, d_lift), nn.Tanh())
         scaled_eps = eps / (d_lift ** 0.5)
         self.K = nn.Parameter(torch.eye(d_lift) + scaled_eps * torch.randn(d_lift, d_lift))
         self.proj = nn.Linear(d_lift, d_out)
@@ -31,6 +31,17 @@ class KoopmanNeuron(nn.Module):
         """Two-sided penalty pushing eigenvalue magnitudes toward 1 (unit circle)."""
         eigs = torch.linalg.eigvals(self.K)
         return (eigs.abs() - 1.0).pow(2).mean()
+
+    def project_to_unit_circle(self) -> None:
+        """Project K eigenvalues onto the unit circle (preserves phases)."""
+        with torch.no_grad():
+            eigvals, V = torch.linalg.eig(self.K)
+            unit_eigvals = eigvals / eigvals.abs().clamp(min=1e-8)
+            try:
+                K_new = (V @ torch.diag(unit_eigvals) @ torch.linalg.inv(V)).real
+                self.K.data.copy_(K_new)
+            except torch.linalg.LinAlgError:
+                pass  # skip if V is singular
 
     def eigenvalues(self) -> torch.Tensor:
         """Compute eigenvalues of the K matrix."""

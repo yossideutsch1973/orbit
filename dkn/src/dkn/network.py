@@ -88,3 +88,9 @@ class KoopmanNet(nn.Module):
             for neuron in layer.neurons:
                 penalty = penalty + neuron.spectral_penalty()
         return penalty
+
+    def project_k_matrices(self) -> None:
+        """Project all K eigenvalues onto the unit circle."""
+        for layer in self.backbone:
+            for neuron in layer.neurons:
+                neuron.project_to_unit_circle()

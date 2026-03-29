@@ -18,6 +18,7 @@ class PPOConfig:
     entropy_coef: float = 0.01
     value_coef: float = 0.5
     spectral_coef: float = 0.1
+    spectral_proj_interval: int = 5
 
 
 class PPOUpdater:
@@ -27,6 +28,7 @@ class PPOUpdater:
         self.network = network
         self.cfg = cfg
         self.optimizer = torch.optim.Adam(network.parameters(), lr=cfg.lr)
+        self.update_count = 0
 
     def update(self, batch: dict[str, torch.Tensor]) -> dict[str, float]:
         """Run PPO epochs on a batch. Returns average losses."""
@@ -71,5 +73,11 @@ class PPOUpdater:
                 totals["entropy"] += entropy_mean.item()
                 totals["total_loss"] += loss.item()
                 n_updates += 1
+
+        self.update_count += 1
+        if (self.cfg.spectral_proj_interval > 0
+                and self.update_count % self.cfg.spectral_proj_interval == 0
+                and hasattr(self.network, "project_k_matrices")):
+            self.network.project_k_matrices()
 
         return {k: v / max(n_updates, 1) for k, v in totals.items()}
