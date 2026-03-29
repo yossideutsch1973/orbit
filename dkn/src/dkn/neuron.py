@@ -17,7 +17,8 @@ class KoopmanNeuron(nn.Module):
         """
         super().__init__()
         self.lift = nn.Sequential(nn.Linear(d_in, d_lift), nn.ReLU())
-        self.K = nn.Parameter(torch.eye(d_lift) + eps * torch.randn(d_lift, d_lift))
+        scaled_eps = eps / (d_lift ** 0.5)
+        self.K = nn.Parameter(torch.eye(d_lift) + scaled_eps * torch.randn(d_lift, d_lift))
         self.proj = nn.Linear(d_lift, d_out)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -27,10 +28,9 @@ class KoopmanNeuron(nn.Module):
         return self.proj(Kg)
 
     def spectral_penalty(self) -> torch.Tensor:
-        """Penalty for eigenvalue magnitudes exceeding 1 (unit circle)."""
+        """Two-sided penalty pushing eigenvalue magnitudes toward 1 (unit circle)."""
         eigs = torch.linalg.eigvals(self.K)
-        magnitudes = eigs.abs()
-        return torch.relu(magnitudes - 1.0).pow(2).mean()
+        return (eigs.abs() - 1.0).pow(2).mean()
 
     def eigenvalues(self) -> torch.Tensor:
         """Compute eigenvalues of the K matrix."""

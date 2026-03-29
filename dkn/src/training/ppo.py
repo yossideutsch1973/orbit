@@ -34,7 +34,10 @@ class PPOUpdater:
         old_log_probs = batch["log_probs"]
         advantages = batch["advantages"]
         returns = batch["returns"]
-        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+        adv_std = advantages.std()
+        if torch.isnan(adv_std) or adv_std < 1e-8:
+            adv_std = torch.tensor(1.0, device=advantages.device)
+        advantages = (advantages - advantages.mean()) / adv_std
 
         n = len(obs)
         totals = {"policy_loss": 0.0, "value_loss": 0.0, "entropy": 0.0, "total_loss": 0.0}
