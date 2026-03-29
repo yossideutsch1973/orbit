@@ -32,13 +32,18 @@ class KoopmanNeuron(nn.Module):
         eigs = torch.linalg.eigvals(self.K)
         return (eigs.abs() - 1.0).pow(2).mean()
 
-    def project_to_unit_circle(self) -> None:
-        """Project K eigenvalues onto the unit circle (preserves phases)."""
+    def project_to_unit_circle(self, alpha: float = 0.2) -> None:
+        """Soft-project K eigenvalues toward the unit circle (preserves phases).
+
+        Args:
+            alpha: Interpolation strength. 0 = no change, 1 = hard project.
+        """
         with torch.no_grad():
             eigvals, V = torch.linalg.eig(self.K)
             unit_eigvals = eigvals / eigvals.abs().clamp(min=1e-8)
+            soft_eigvals = (1 - alpha) * eigvals + alpha * unit_eigvals
             try:
-                K_new = (V @ torch.diag(unit_eigvals) @ torch.linalg.inv(V)).real
+                K_new = (V @ torch.diag(soft_eigvals) @ torch.linalg.inv(V)).real
                 self.K.data.copy_(K_new)
             except torch.linalg.LinAlgError:
                 pass  # skip if V is singular
