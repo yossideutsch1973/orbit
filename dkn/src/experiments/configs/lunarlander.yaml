@@ -1,0 +1,34 @@
+name: lunarlander
+env: LunarLander-v3
+state_dim: 8
+action_dim: 4
+seed: 42
+
+dkn:
+  n_layers: 2
+  neurons_per_layer: 4
+  d_lift: 16
+  d_out_per_neuron: 8
+  head_hidden: 64  # MLP head after backbone
+
+mlp_baseline:
+  hidden: 128
+
+training:
+  algorithm: ppo_batched
+  total_steps: 1000000
+  steps_per_update: 2048
+  lr: 3.0e-4
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_eps: 0.2
+  ppo_epochs: 4
+  minibatch_size: 64
+  max_grad_norm: 0.5
+  entropy_coef: 0.01
+  value_coef: 0.5
+
+logging:
+  log_interval: 20
+  spectra_interval: 100
+  save_model: true

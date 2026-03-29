@@ -1,0 +1,25 @@
+[project]
+name = "dkn"
+version = "0.1.0"
+description = "Distributed Koopman Networks"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0",
+    "gymnasium[box2d]>=0.29",
+    "numpy",
+    "pyyaml",
+    "sympy",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "wandb"]
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
