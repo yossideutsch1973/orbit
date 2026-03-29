@@ -21,6 +21,7 @@ class DKNConfig:
     d_out_per_neuron: int
     head_hidden: int = 0
     broadcast: bool = True
+    k_rank: int = 0
 
 
 class KoopmanNet(nn.Module):
@@ -34,7 +35,7 @@ class KoopmanNet(nn.Module):
         for _ in range(cfg.n_layers):
             layer = KoopmanLayer(
                 d_in, cfg.neurons_per_layer, cfg.d_lift, cfg.d_out_per_neuron,
-                broadcast=cfg.broadcast,
+                broadcast=cfg.broadcast, k_rank=cfg.k_rank,
             )
             layers.append(layer)
             d_in = layer.d_out

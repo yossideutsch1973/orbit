@@ -18,6 +18,7 @@ class KoopmanLayer(nn.Module):
         mix: bool = False,
         eps: float = 0.01,
         broadcast: bool = False,
+        k_rank: int = 0,
     ) -> None:
         """
         Args:
@@ -28,6 +29,7 @@ class KoopmanLayer(nn.Module):
             mix: If True, apply a learned mixing layer after concatenation.
             eps: Near-identity init scale for K matrices.
             broadcast: If True, every neuron sees full input instead of a slice.
+            k_rank: Low-rank K factorization rank. 0 = full K matrix.
         """
         super().__init__()
         self.broadcast = broadcast
@@ -47,7 +49,7 @@ class KoopmanLayer(nn.Module):
         neurons = []
         for i in range(n_neurons):
             nd_in = neuron_d_in if broadcast else (self.slices[i][1] - self.slices[i][0])
-            neurons.append(KoopmanNeuron(nd_in, d_lift, d_out_per_neuron, eps))
+            neurons.append(KoopmanNeuron(nd_in, d_lift, d_out_per_neuron, eps, k_rank))
         self.neurons = nn.ModuleList(neurons)
         self.d_out = n_neurons * d_out_per_neuron
         self.mixer = nn.Linear(self.d_out, self.d_out) if mix else None
